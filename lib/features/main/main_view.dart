@@ -29,31 +29,31 @@ class _MainViewState extends State<MainView> {
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
+          color: Colors.white,
           border: Border(top: BorderSide(color: AppColors.border, width: 1)),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: AppColors.surface,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textMuted,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) => setState(() => _currentIndex = index),
+          backgroundColor: Colors.white,
+          indicatorColor: AppColors.primary.withValues(alpha: 0.1),
           elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard_rounded),
-              label: 'Dashboard',
+          height: 65,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.grid_view_outlined, color: AppColors.textSecondary),
+              selectedIcon: Icon(Icons.grid_view_rounded, color: AppColors.primary),
+              label: 'Home',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.folder_outlined),
-              activeIcon: Icon(Icons.folder_rounded),
-              label: 'My Files',
+            NavigationDestination(
+              icon: Icon(Icons.folder_outlined, color: AppColors.textSecondary),
+              selectedIcon: Icon(Icons.folder_rounded, color: AppColors.primary),
+              label: 'Files',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline, color: AppColors.textSecondary),
+              selectedIcon: Icon(Icons.person, color: AppColors.primary),
               label: 'Profile',
             ),
           ],
