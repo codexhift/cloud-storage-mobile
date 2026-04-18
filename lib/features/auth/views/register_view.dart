@@ -2,87 +2,75 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/app_colors.dart';
 import '../providers/auth_provider.dart';
-import 'register_view.dart';
+import 'login_view.dart';
 
-class LoginView extends ConsumerStatefulWidget {
-  const LoginView({super.key});
+class RegisterView extends ConsumerStatefulWidget {
+  const RegisterView({super.key});
 
   @override
-  ConsumerState<LoginView> createState() => _LoginViewState();
+  ConsumerState<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends ConsumerState<LoginView> {
+class _RegisterViewState extends ConsumerState<RegisterView> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscureText = true;
-  bool _rememberMe = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadRememberMePreference();
-  }
-
-  Future<void> _loadRememberMePreference() async {
-    final repo = ref.read(authRepositoryProvider);
-    final rememberMe = await repo.getRememberMe();
-    if (mounted) {
-      setState(() {
-        _rememberMe = rememberMe;
-      });
-    }
-  }
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       final success = await ref
           .read(authStateProvider.notifier)
-          .login(
-            _emailController.text.trim(),
-            _passwordController.text,
-            rememberMe: _rememberMe,
+          .register(
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
           );
 
-      if (!success && mounted) {
-        // Error is already handled by the provider, but we can add additional UI feedback
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registrasi berhasil!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        // Navigate to main app (will be handled by main.dart based on auth state)
+      } else if (mounted) {
+        // Show error from provider
         final authState = ref.read(authStateProvider);
         if (authState.error != null) {
-          _showErrorSnackBar(authState.error!);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(authState.error!)),
+                ],
+              ),
+              backgroundColor: AppColors.danger,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          ref.read(authStateProvider.notifier).clearError();
         }
       }
     }
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: AppColors.danger,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-        action: SnackBarAction(
-          label: 'Tutup',
-          textColor: Colors.white,
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
-        ),
-      ),
-    );
   }
 
   @override
@@ -92,8 +80,20 @@ class _LoginViewState extends ConsumerState<LoginView> {
     // Listen for error changes
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (next.error != null && next.error != previous?.error) {
-        _showErrorSnackBar(next.error!);
-        // Clear error after showing
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(child: Text(next.error!)),
+              ],
+            ),
+            backgroundColor: AppColors.danger,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
         Future.delayed(const Duration(milliseconds: 100), () {
           ref.read(authStateProvider.notifier).clearError();
         });
@@ -115,7 +115,6 @@ class _LoginViewState extends ConsumerState<LoginView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo centered at the very top
                   Center(
                     child: Image.asset(
                       'assets/images/CLD.png',
@@ -136,7 +135,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const Text(
-                            'Masuk ke Akun',
+                            'Buat Akun Baru',
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -147,15 +146,25 @@ class _LoginViewState extends ConsumerState<LoginView> {
                           ),
                           const SizedBox(height: 32),
 
-                          const Text(
-                            'Email',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
+                          _buildLabel('Nama'),
+                          TextFormField(
+                            controller: _nameController,
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              hintText: 'Nama lengkap',
+                              prefixIcon: Icon(
+                                Icons.person_outlined,
+                                color: AppColors.textMuted,
+                                size: 20,
+                              ),
                             ),
+                            validator: (v) => v == null || v.isEmpty
+                                ? 'Nama wajib diisi'
+                                : null,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 20),
+
+                          _buildLabel('Email'),
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
@@ -168,12 +177,12 @@ class _LoginViewState extends ConsumerState<LoginView> {
                                 size: 20,
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty)
+                            validator: (v) {
+                              if (v == null || v.isEmpty)
                                 return 'Email wajib diisi';
                               if (!RegExp(
                                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                              ).hasMatch(value)) {
+                              ).hasMatch(v)) {
                                 return 'Masukkan email yang valid';
                               }
                               return null;
@@ -181,22 +190,13 @@ class _LoginViewState extends ConsumerState<LoginView> {
                           ),
                           const SizedBox(height: 20),
 
-                          const Text(
-                            'Password',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
+                          _buildLabel('Password'),
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscureText,
-                            textInputAction: TextInputAction.done,
-                            onFieldSubmitted: (_) => _login(),
+                            textInputAction: TextInputAction.next,
                             decoration: InputDecoration(
-                              hintText: 'Masukkan password',
+                              hintText: 'Minimal 8 karakter',
                               prefixIcon: const Icon(
                                 Icons.lock_outlined,
                                 color: AppColors.textMuted,
@@ -207,7 +207,6 @@ class _LoginViewState extends ConsumerState<LoginView> {
                                   _obscureText
                                       ? Icons.visibility_off_outlined
                                       : Icons.visibility_outlined,
-                                  color: AppColors.textMuted,
                                   size: 20,
                                 ),
                                 onPressed: () => setState(
@@ -215,51 +214,36 @@ class _LoginViewState extends ConsumerState<LoginView> {
                                 ),
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty)
-                                return 'Password wajib diisi';
-                              if (value.length < 6)
-                                return 'Password minimal 6 karakter';
-                              return null;
-                            },
+                            validator: (v) => v == null || v.length < 8
+                                ? 'Password minimal 8 karakter'
+                                : null,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 20),
 
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Checkbox(
-                                  value: _rememberMe,
-                                  onChanged: (v) {
-                                    setState(() {
-                                      _rememberMe = v ?? false;
-                                    });
-                                  },
-                                  activeColor: AppColors.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
+                          _buildLabel('Konfirmasi Password'),
+                          TextFormField(
+                            controller: _confirmPasswordController,
+                            obscureText: _obscureText,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) => _register(),
+                            decoration: const InputDecoration(
+                              hintText: 'Ulangi password',
+                              prefixIcon: Icon(
+                                Icons.lock_outlined,
+                                color: AppColors.textMuted,
+                                size: 20,
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Ingat Saya',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
+                            ),
+                            validator: (v) => v != _passwordController.text
+                                ? 'Password tidak cocok'
+                                : null,
                           ),
-
                           const SizedBox(height: 32),
 
                           SizedBox(
                             height: 48,
                             child: ElevatedButton(
-                              onPressed: authState.isLoading ? null : _login,
+                              onPressed: authState.isLoading ? null : _register,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
@@ -277,7 +261,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                                       ),
                                     )
                                   : const Text(
-                                      'Masuk',
+                                      'Daftar',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -295,21 +279,19 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        'Belum punya akun? ',
+                        'Sudah punya akun? ',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 14,
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => Navigator.push(
+                        onTap: () => Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const RegisterView(),
-                          ),
+                          MaterialPageRoute(builder: (_) => const LoginView()),
                         ),
                         child: const Text(
-                          'Daftar Sekarang',
+                          'Login Sekarang',
                           style: TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
@@ -323,6 +305,20 @@ class _LoginViewState extends ConsumerState<LoginView> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          color: AppColors.textSecondary,
         ),
       ),
     );

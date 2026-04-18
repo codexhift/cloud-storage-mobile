@@ -9,7 +9,7 @@ class ProfileView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authStateProvider).value;
+    final user = ref.watch(authStateProvider).user;
 
     if (user == null) {
       return const Center(child: CircularProgressIndicator());
@@ -18,12 +18,17 @@ class ProfileView extends ConsumerWidget {
     final usedMB = user.storageUsed / (1024 * 1024);
     final totalMB = user.storageQuota / (1024 * 1024);
     final freeMB = totalMB - usedMB;
-    final pct = user.storageQuota > 0 ? (user.storageUsed / user.storageQuota) * 100 : 0;
+    final pct = user.storageQuota > 0
+        ? (user.storageUsed / user.storageQuota) * 100
+        : 0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Profil Akun', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Profil Akun',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -35,7 +40,7 @@ class ProfileView extends ConsumerWidget {
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 24),
-            
+
             // User Card
             Container(
               padding: const EdgeInsets.all(20),
@@ -58,7 +63,11 @@ class ProfileView extends ConsumerWidget {
                         child: Center(
                           child: Text(
                             user.name[0].toUpperCase(),
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -69,26 +78,37 @@ class ProfileView extends ConsumerWidget {
                           children: [
                             Text(
                               user.name,
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.calendar_month, size: 14, color: AppColors.textSecondary),
+                                const Icon(
+                                  Icons.calendar_month,
+                                  size: 14,
+                                  color: AppColors.textSecondary,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Bergabung sejak ${DateFormat.yMMM().format(user.createdAt)}',
-                                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               ],
-                            )
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Storage usage visually identical to web
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -107,23 +127,46 @@ class ProfileView extends ConsumerWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('PENGGUNAAN PENYIMPANAN', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 0.5)),
+                                const Text(
+                                  'PENGGUNAAN PENYIMPANAN',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
                                 RichText(
                                   text: TextSpan(
                                     text: usedMB.toStringAsFixed(2),
-                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
                                     children: const [
-                                      TextSpan(text: ' MB digunakan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: AppColors.textSecondary)),
-                                    ]
+                                      TextSpan(
+                                        text: ' MB digunakan',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.normal,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                             Text(
                               '${freeMB.toStringAsFixed(1)} MB Tersisa',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
-                            )
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -135,16 +178,16 @@ class ProfileView extends ConsumerWidget {
                             backgroundColor: AppColors.primaryRing,
                             color: AppColors.primary,
                           ),
-                        )
+                        ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Actions
             Container(
               padding: const EdgeInsets.all(16),
@@ -156,7 +199,10 @@ class ProfileView extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Aksi Pengguna', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text(
+                    'Aksi Pengguna',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                   const SizedBox(height: 12),
                   Material(
                     color: Colors.transparent,
@@ -166,7 +212,10 @@ class ProfileView extends ConsumerWidget {
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.background,
                           borderRadius: BorderRadius.circular(12),
@@ -176,7 +225,13 @@ class ProfileView extends ConsumerWidget {
                           children: [
                             Icon(Icons.logout, color: Colors.orange, size: 20),
                             SizedBox(width: 12),
-                            Text('Keluar dari Sesi', style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+                            Text(
+                              'Keluar dari Sesi',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
                           ],
                         ),
                       ),
