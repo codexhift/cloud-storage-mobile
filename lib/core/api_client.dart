@@ -14,7 +14,7 @@ class ApiClient {
   }
 
   ApiClient._internal() {
-    final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:8000/api';
+    final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://192.168.1.13 :8000/api';
     
     dio = Dio(BaseOptions(
       baseUrl: baseUrl,

@@ -9,49 +9,74 @@ class AuthRepository {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   Future<UserModel?> login(String email, String password) async {
-    try {
-      final response = await _api.dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-        'device_name': 'mobile_app',
-      });
+  try {
+    final response = await _api.dio.post('/auth/login', data: {
+      'email': email,
+      'password': password,
+      'device_name': 'mobile_app',
+    });
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data['token'] != null) {
-          await _storage.write(key: 'auth_token', value: data['token']);
-        }
-        return UserModel.fromJson(data['user']);
+    print("LOGIN RESPONSE: ${response.data}");
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+
+      // simpan token
+      final token =
+        data['token'] ??
+        data['access_token'] ??
+        data['data']?['token'] ??
+        data['data']?['access_token'];
+
+      print("TOKEN FROM API: $token");
+      if (token != null) {
+        await _storage.write(key: 'auth_token', value: token);
       }
-      return null;
-    } on DioException catch (e) {
-      log('Login failed: ${e.response?.data}');
-      throw Exception(e.response?.data['message'] ?? 'Failed to login');
+
+      // ambil user (support banyak kemungkinan struktur)
+      final userJson =
+          data['user'] ??
+          data['data']?['user'] ??
+          data;
+
+      return UserModel.fromJson(userJson);
     }
+
+    return null;
+  } on DioException catch (e) {
+    print('Login failed: ${e.response?.data}');
+    throw Exception(e.response?.data['message'] ?? 'Failed to login');
   }
+}
 
   Future<UserModel?> getMe() async {
-    try {
-      final token = await _storage.read(key: 'auth_token');
-      if (token == null) return null;
+  try {
+    final token = await _storage.read(key: 'auth_token');
+    print("TOKEN: $token");
 
-      final response = await _api.dio.get('/auth/me');
-      if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data['user']);
-      }
-      return null;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        await logout(); // Token expired or invalid
-      }
-      log('GetMe failed: ${e.response?.data}');
-      return null;
-    } catch (e) {
-      log('Error getting user: $e');
-      return null;
+    if (token == null) return null;
+
+    final response = await _api.dio.get('/auth/me');
+
+    print("GET ME RESPONSE: ${response.data}");
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+
+      final userJson =
+          data['user'] ??
+          data['data']?['user'] ??
+          data;
+
+      return UserModel.fromJson(userJson);
     }
-  }
 
+    return null;
+  } catch (e) {
+    log('Error getting user: $e');
+    return null;
+  }
+}
   Future<void> logout() async {
     try {
       await _api.dio.post('/auth/logout');

@@ -33,7 +33,7 @@ class DashboardView extends ConsumerWidget {
       backgroundColor: AppColors.backgroundAlt,
       appBar: AppBar(
         title: Image.asset(
-          'assets/images/CLD.png', 
+          'assets/CLD.png', 
           height: 36,
           errorBuilder: (context, error, stackTrace) => 
             const Icon(Icons.cloud, color: AppColors.primary),

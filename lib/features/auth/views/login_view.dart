@@ -23,12 +23,15 @@ class _LoginViewState extends ConsumerState<LoginView> {
   }
 
   void _login() {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
-      return;
-    }
+  print("BUTTON CLICKED"); // 🔥 debug
+
+  if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please fill all fields')),
+    );
+    return;
+  }
+
     
     ref.read(authStateProvider.notifier).login(
       _emailController.text.trim(),
@@ -50,6 +53,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
           ),
         );
       }
+
     });
 
     return Scaffold(
@@ -63,7 +67,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
               // Logo placeholder
               Center(
                 child: Image.asset(
-                  'assets/images/CLD.png',
+                  'assets/CLD.png',
                   height: 60,
                   errorBuilder: (context, error, stackTrace) => 
                      const Icon(Icons.cloud, size: 60, color: AppColors.primary),
@@ -114,7 +118,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                       const SizedBox(height: 24),
                       
                       ElevatedButton(
-                        onPressed: authState.isLoading ? null : _login,
+                        onPressed:  _login,
                         child: authState.isLoading
                             ? const SizedBox(
                                 height: 20,

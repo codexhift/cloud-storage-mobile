@@ -12,7 +12,7 @@ class SplashView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/CLD.png',
+              'assets/CLD.png',
               height: 80,
               errorBuilder: (context, error, stackTrace) => 
                  const Icon(Icons.cloud, size: 80, color: AppColors.primary),
