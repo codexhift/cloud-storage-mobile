@@ -169,8 +169,9 @@ class _LoginViewState extends ConsumerState<LoginView> {
                               ),
                             ),
                             validator: (value) {
-                              if (value == null || value.isEmpty)
+                              if (value == null || value.isEmpty) {
                                 return 'Email wajib diisi';
+                              }
                               if (!RegExp(
                                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                               ).hasMatch(value)) {
@@ -216,10 +217,12 @@ class _LoginViewState extends ConsumerState<LoginView> {
                               ),
                             ),
                             validator: (value) {
-                              if (value == null || value.isEmpty)
+                              if (value == null || value.isEmpty) {
                                 return 'Password wajib diisi';
-                              if (value.length < 6)
+                              }
+                              if (value.length < 6) {
                                 return 'Password minimal 6 karakter';
+                              }
                               return null;
                             },
                           ),

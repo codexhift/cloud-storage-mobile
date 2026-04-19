@@ -19,8 +19,9 @@ class DashboardView extends ConsumerWidget {
     final recentFilesAsync = ref.watch(recentFilesProvider);
     final searchText = ref.watch(fileSearchProvider);
 
-    if (user == null)
+    if (user == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     final hour = DateTime.now().hour;
     final greeting = hour < 12
@@ -176,8 +177,9 @@ class DashboardView extends ConsumerWidget {
                         ),
                       )
                       .toList();
-                  if (filteredFiles.isEmpty)
+                  if (filteredFiles.isEmpty) {
                     return _buildEmptyState(searchText.isNotEmpty);
+                  }
                   return ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),

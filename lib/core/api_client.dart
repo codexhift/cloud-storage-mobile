@@ -46,10 +46,12 @@ class ApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = await _storage.read(key: 'auth_token');
-          if (token != null) {
+          if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
+            log('Token attached to request: ${options.path}');
+          } else {
+            log('No token found for request: ${options.path}');
           }
-          log('API Request: ${options.method} ${options.path}');
           return handler.next(options);
         },
         onError: (DioException e, handler) async {
@@ -59,8 +61,11 @@ class ApiClient {
           log('API Error: $statusCode - $path - ${e.message}');
 
           // Handle 401 Unauthorized - token expired or invalid
-          if (statusCode == 401) {
-            log('Token expired or invalid, clearing stored token');
+          // Skip auto-logout for auth endpoints (/v1/auth/*) to prevent interference with getMe() checks
+          if (statusCode == 401 && !path.contains('/v1/auth')) {
+            log(
+              'Token expired or invalid on non-auth endpoint, clearing stored token',
+            );
             await _storage.delete(key: 'auth_token');
 
             // Trigger callback for auto-logout
@@ -68,9 +73,6 @@ class ApiClient {
               onUnauthorized!();
             }
           }
-
-          // Note: Retry logic removed due to type inference issues
-          // Network errors will be handled by the calling code
 
           return handler.next(e);
         },

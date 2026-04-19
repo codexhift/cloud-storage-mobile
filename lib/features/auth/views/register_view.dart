@@ -178,8 +178,9 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                               ),
                             ),
                             validator: (v) {
-                              if (v == null || v.isEmpty)
+                              if (v == null || v.isEmpty) {
                                 return 'Email wajib diisi';
+                              }
                               if (!RegExp(
                                 r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                               ).hasMatch(v)) {

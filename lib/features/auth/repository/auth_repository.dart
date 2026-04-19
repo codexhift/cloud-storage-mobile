@@ -166,10 +166,8 @@ class AuthRepository {
     } on DioException catch (e) {
       log('getMe DioException: ${e.type} - ${e.response?.statusCode}');
 
-      if (e.response?.statusCode == 401) {
-        log('Token expired or invalid, clearing...');
-        await _storage.delete(key: tokenKey);
-      }
+      // Note: Token clearing moved to ApiClient interceptor for non-auth endpoints
+      // For auth endpoints, let getMe() handle gracefully without auto-logout
       return null;
     } catch (e) {
       log('getMe unexpected error: $e');
