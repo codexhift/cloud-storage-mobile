@@ -45,8 +45,13 @@ class StorageDonutChart extends StatelessWidget {
                 ),
               ],
             ),
+
             swapAnimationDuration: const Duration(milliseconds: 900),
             swapAnimationCurve: Curves.easeInOutQuart,
+
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeInOutQuart,
+
           ),
           Column(
             mainAxisSize: MainAxisSize.min,

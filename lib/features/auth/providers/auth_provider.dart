@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../repository/auth_repository.dart';
 
+import '../../../core/api_client.dart';
+import 'dart:developer';
+
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
 });
@@ -32,15 +35,129 @@ class AuthNotifier extends Notifier<AsyncValue<UserModel?>> {
       state = AsyncValue.data(user);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
+
+class AuthState {
+  final UserModel? user;
+  final bool isLoading;
+  final String? error;
+  final bool isAuthenticated;
+
+  const AuthState({
+    this.user,
+    this.isLoading = false,
+    this.error,
+    this.isAuthenticated = false,
+  });
+
+  AuthState copyWith({
+    UserModel? user,
+    bool? isLoading,
+    String? error,
+    bool? isAuthenticated,
+    bool clearUser = false,
+    bool clearError = false,
+  }) {
+    return AuthState(
+      user: clearUser ? null : (user ?? this.user),
+      isLoading: isLoading ?? this.isLoading,
+      error: clearError ? null : (error ?? this.error),
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+    );
+  }
+}
+
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
+    log('AuthNotifier: Initializing...');
+
+    // Set up 401 callback for auto-logout
+    ApiClient.onUnauthorized = () {
+      log('AuthNotifier: Received 401 callback, logging out...');
+      logout();
+    };
+
+    // Check auth status on init
+    Future.microtask(() => checkAuthStatus());
+
+    return const AuthState(isLoading: true);
+  }
+
+  Future<void> checkAuthStatus() async {
+    log('AuthNotifier: Checking auth status...');
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final user = await repo.getMe();
+
+      if (user != null) {
+        log('AuthNotifier: User authenticated: ${user.email}');
+        state = AuthState(user: user, isAuthenticated: true, isLoading: false);
+      } else {
+        log('AuthNotifier: No authenticated user');
+        state = const AuthState(isAuthenticated: false, isLoading: false);
+      }
+    } catch (e) {
+      log('AuthNotifier: Error checking auth: $e');
+      state = const AuthState(isAuthenticated: false, isLoading: false);
+    }
+  }
+
+  Future<bool> login(
+    String email,
+    String password, {
+    bool rememberMe = false,
+  }) async {
+    log('AuthNotifier: Login attempt for $email');
+
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final user = await repo.login(email, password, rememberMe: rememberMe);
+
+      log('AuthNotifier: Login successful for ${user.email}');
+
+      state = AuthState(user: user, isAuthenticated: true, isLoading: false);
+
+      return true;
+    } on AuthException catch (e) {
+      log('AuthNotifier: Login failed - ${e.message}');
+
+      state = state.copyWith(isLoading: false, error: e.message);
+
+      return false;
+    } catch (e) {
+      log('AuthNotifier: Login unexpected error: $e');
+
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.',
+      );
+
+      return false;
+
     }
   }
 
   Future<void> logout() async {
+
     state = const AsyncValue.loading();
+
+    log('AuthNotifier: Logging out...');
+
+    state = state.copyWith(isLoading: true);
+
+    // Disable 401 callback to prevent infinite loop when calling logout API
+    final previousCallback = ApiClient.onUnauthorized;
+    ApiClient.onUnauthorized = null;
+
+
     try {
       final repo = ref.read(authRepositoryProvider);
       await repo.logout();
     } catch (e) {
+
       // ignore
     } finally {
       state = const AsyncValue.data(null);
@@ -50,4 +167,71 @@ class AuthNotifier extends Notifier<AsyncValue<UserModel?>> {
 
 final authStateProvider = NotifierProvider<AuthNotifier, AsyncValue<UserModel?>>(() {
   return AuthNotifier();
+});
+
+      log('AuthNotifier: Logout error (non-critical): $e');
+    } finally {
+      // Restore callback
+      ApiClient.onUnauthorized = previousCallback;
+      state = const AuthState(isAuthenticated: false, isLoading: false);
+    }
+  }
+
+  /// Register a new user
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    log('AuthNotifier: Registration attempt for $email');
+
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final user = await repo.register(
+        name: name,
+        email: email,
+        password: password,
+      );
+
+      log('AuthNotifier: Registration successful for ${user.email}');
+
+      state = AuthState(user: user, isAuthenticated: true, isLoading: false);
+
+      return true;
+    } on AuthException catch (e) {
+      log('AuthNotifier: Registration failed - ${e.message}');
+
+      state = state.copyWith(isLoading: false, error: e.message);
+
+      return false;
+    } catch (e) {
+      log('AuthNotifier: Registration unexpected error: $e');
+
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.',
+      );
+
+      return false;
+    }
+  }
+
+  void clearError() {
+    state = state.copyWith(clearError: true);
+  }
+}
+
+final authStateProvider = NotifierProvider<AuthNotifier, AuthState>(() {
+  return AuthNotifier();
+});
+
+// Convenience providers
+final isAuthenticatedProvider = Provider<bool>((ref) {
+  return ref.watch(authStateProvider).isAuthenticated;
+});
+
+final currentUserProvider = Provider<UserModel?>((ref) {
+  return ref.watch(authStateProvider).user;
 });
