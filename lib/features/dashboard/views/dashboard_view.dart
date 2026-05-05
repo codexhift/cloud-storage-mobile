@@ -5,6 +5,7 @@ import '../../../../core/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../files/providers/file_provider.dart';
 import '../../files/providers/search_provider.dart';
+import '../../files/providers/storage_provider.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/storage_usage_bar.dart';
 import '../widgets/cld_search_bar.dart';
@@ -16,8 +17,8 @@ class DashboardView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
     final user = authState.user;
-    final recentFilesAsync = ref.watch(recentFilesProvider);
     final searchText = ref.watch(fileSearchProvider);
+    final storageAsync = ref.watch(storageInfoProvider);
 
     if (user == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -30,7 +31,7 @@ class DashboardView extends ConsumerWidget {
     final firstName = user.name.split(' ').first;
 
     final usedMB = (user.storageUsed / (1024 * 1024)).toStringAsFixed(1);
-    final totalMB = (user.storageQuota / (1024 * 1024)).toStringAsFixed(0);
+    final totalGB = (user.storageQuota / (1024 * 1024 * 1024)).toStringAsFixed(0);
     final pct =
         (user.storageUsed / (user.storageQuota > 0 ? user.storageQuota : 1)) *
         100;
@@ -57,25 +58,32 @@ class DashboardView extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: CircleAvatar(
-              radius: 14,
-              backgroundColor: AppColors.primary,
-              child: Text(
-                firstName[0].toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            icon: user.avatar != null
+                ? CircleAvatar(
+                    radius: 14,
+                    backgroundImage: NetworkImage(user.avatar!),
+                    onBackgroundImageError: (_, __) {},
+                  )
+                : CircleAvatar(
+                    radius: 14,
+                    backgroundColor: AppColors.primary,
+                    child: Text(
+                      firstName[0].toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(recentFilesProvider);
+          ref.invalidate(storageInfoProvider);
+          ref.invalidate(filesProvider(null));
           await ref.read(authStateProvider.notifier).checkAuthStatus();
         },
         child: SingleChildScrollView(
@@ -103,44 +111,107 @@ class DashboardView extends ConsumerWidget {
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: 24),
-              // StatCards - horizontal scroll with responsive layout
+
+              // StatCards
               SizedBox(
-                height: 130, // Fixed height for horizontal scroll container
+                height: 130,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min, // Prevent unbounded width
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       StatCard(
-                        label: 'Total Files',
-                        value: '124',
-                        sub: 'Across 12 folders',
-                        icon: Icons.folder_copy_outlined,
+                        label: 'Storage Used',
+                        value: '$usedMB MB',
+                        sub: '${pct.toStringAsFixed(1)}% of $totalGB GB',
+                        icon: Icons.donut_large_rounded,
                         bg: Colors.white,
                         iconBg: AppColors.primary,
                         index: '01',
                       ),
                       const SizedBox(width: 12),
-                      StatCard(
-                        label: 'Storage Used',
-                        value: '$usedMB MB',
-                        sub: '${pct.toStringAsFixed(1)}% of $totalMB MB',
-                        icon: Icons.donut_large_rounded,
-                        bg: Colors.white,
-                        iconBg: AppColors.violet,
-                        index: '02',
-                      ),
-                      const SizedBox(width: 12),
-                      StatCard(
-                        label: 'Recent Uploads',
-                        value: '12',
-                        sub: 'In the last 24h',
-                        icon: Icons.upload_file_outlined,
-                        bg: Colors.white,
-                        iconBg: AppColors.amber,
-                        index: '03',
+                      // Show dynamic stats from storage API
+                      storageAsync.when(
+                        data: (info) {
+                          final imgCat = info.categories['images'] ??
+                              info.categories['Images'];
+                          final docCat = info.categories['documents'] ??
+                              info.categories['Documents'];
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              StatCard(
+                                label: 'Images',
+                                value: imgCat?.sizeFormatted ?? '0 B',
+                                sub: '${imgCat?.count ?? 0} files',
+                                icon: Icons.image_outlined,
+                                bg: Colors.white,
+                                iconBg: AppColors.violet,
+                                index: '02',
+                              ),
+                              const SizedBox(width: 12),
+                              StatCard(
+                                label: 'Documents',
+                                value: docCat?.sizeFormatted ?? '0 B',
+                                sub: '${docCat?.count ?? 0} files',
+                                icon: Icons.description_outlined,
+                                bg: Colors.white,
+                                iconBg: AppColors.amber,
+                                index: '03',
+                              ),
+                            ],
+                          );
+                        },
+                        loading: () => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            StatCard(
+                              label: 'Images',
+                              value: '...',
+                              sub: 'Loading',
+                              icon: Icons.image_outlined,
+                              bg: Colors.white,
+                              iconBg: AppColors.violet,
+                              index: '02',
+                            ),
+                            const SizedBox(width: 12),
+                            StatCard(
+                              label: 'Documents',
+                              value: '...',
+                              sub: 'Loading',
+                              icon: Icons.description_outlined,
+                              bg: Colors.white,
+                              iconBg: AppColors.amber,
+                              index: '03',
+                            ),
+                          ],
+                        ),
+                        error: (_, __) => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            StatCard(
+                              label: 'Images',
+                              value: '-',
+                              sub: 'Error',
+                              icon: Icons.image_outlined,
+                              bg: Colors.white,
+                              iconBg: AppColors.violet,
+                              index: '02',
+                            ),
+                            const SizedBox(width: 12),
+                            StatCard(
+                              label: 'Documents',
+                              value: '-',
+                              sub: 'Error',
+                              icon: Icons.description_outlined,
+                              bg: Colors.white,
+                              iconBg: AppColors.amber,
+                              index: '03',
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -168,11 +239,12 @@ class DashboardView extends ConsumerWidget {
                   ),
                 ],
               ),
-              recentFilesAsync.when(
+              // Recent files from the files endpoint
+              ref.watch(filesProvider(null)).when(
                 data: (files) {
                   final filteredFiles = files
                       .where(
-                        (f) => f.namaTampilan.toLowerCase().contains(
+                        (f) => f.name.toLowerCase().contains(
                           searchText.toLowerCase(),
                         ),
                       )
@@ -202,9 +274,11 @@ class DashboardView extends ConsumerWidget {
   }
 
   Widget _buildFileTile(dynamic file) {
-    final ext = file.ekstensi.toLowerCase();
+    final ext = file.extension.toLowerCase();
     Color iconColor = AppColors.primary;
-    if (['jpg', 'jpeg', 'png'].contains(ext)) iconColor = AppColors.violet;
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {
+      iconColor = AppColors.violet;
+    }
     if (['pdf'].contains(ext)) iconColor = AppColors.danger;
     return Container(
       padding: const EdgeInsets.all(12),
@@ -233,7 +307,7 @@ class DashboardView extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  file.namaTampilan,
+                  file.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -251,6 +325,12 @@ class DashboardView extends ConsumerWidget {
               ],
             ),
           ),
+          if (file.isStarred)
+            const Padding(
+              padding: EdgeInsets.only(right: 4),
+              child:
+                  Icon(Icons.star_rounded, color: AppColors.amber, size: 16),
+            ),
           const Icon(Icons.more_vert, color: AppColors.textMuted, size: 20),
         ],
       ),

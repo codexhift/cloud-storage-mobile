@@ -7,17 +7,41 @@ final fileRepositoryProvider = Provider<FileRepository>((ref) {
   return FileRepository();
 });
 
-final recentFilesProvider = FutureProvider<List<FileModel>>((ref) async {
-  final repo = ref.read(fileRepositoryProvider);
-  return repo.getRecentFiles();
-});
-
-final rootFolderProvider = FutureProvider<FolderModel>((ref) async {
+/// Root folders list
+final rootFoldersProvider = FutureProvider<List<FolderModel>>((ref) async {
   final repo = ref.read(fileRepositoryProvider);
   return repo.getRootFolders();
 });
 
-final folderContentsProvider = FutureProvider.family<FolderModel, int>((ref, folderId) async {
+/// Folder contents by ID
+final folderContentsProvider =
+    FutureProvider.family<FolderModel, int>((ref, folderId) async {
   final repo = ref.read(fileRepositoryProvider);
   return repo.getFolderContents(folderId);
+});
+
+/// Files list with optional folder filter
+final filesProvider =
+    FutureProvider.family<List<FileModel>, int?>((ref, folderId) async {
+  final repo = ref.read(fileRepositoryProvider);
+  return repo.getFiles(folderId: folderId);
+});
+
+/// Search files
+final fileSearchResultsProvider =
+    FutureProvider.family<List<FileModel>, String>((ref, query) async {
+  final repo = ref.read(fileRepositoryProvider);
+  return repo.getFiles(query: query);
+});
+
+/// Trash
+final trashProvider = FutureProvider<List<FileModel>>((ref) async {
+  final repo = ref.read(fileRepositoryProvider);
+  return repo.getTrash();
+});
+
+/// Folder tree
+final folderTreeProvider = FutureProvider<List<FolderModel>>((ref) async {
+  final repo = ref.read(fileRepositoryProvider);
+  return repo.getFolderTree();
 });

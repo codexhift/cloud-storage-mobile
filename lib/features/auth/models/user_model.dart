@@ -4,7 +4,8 @@ class UserModel {
   final String email;
   final int storageQuota;
   final int storageUsed;
-  final String? profilePhotoUrl;
+  final String? avatar;
+  final String? googleId;
   final DateTime createdAt;
 
   UserModel({
@@ -13,7 +14,8 @@ class UserModel {
     required this.email,
     required this.storageQuota,
     required this.storageUsed,
-    this.profilePhotoUrl,
+    this.avatar,
+    this.googleId,
     required this.createdAt,
   });
 
@@ -22,9 +24,10 @@ class UserModel {
       id: json['id'],
       name: json['name'],
       email: json['email'],
-      storageQuota: json['storage_quota'] ?? 1073741824, // 1GB default
+      storageQuota: json['storage_quota'] ?? 5368709120, // 5GB default
       storageUsed: json['storage_used'] ?? 0,
-      profilePhotoUrl: json['profile_photo_url'],
+      avatar: json['avatar'] ?? json['profile_photo_url'],
+      googleId: json['google_id'],
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -36,7 +39,8 @@ class UserModel {
       'email': email,
       'storage_quota': storageQuota,
       'storage_used': storageUsed,
-      'profile_photo_url': profilePhotoUrl,
+      'avatar': avatar,
+      'google_id': googleId,
       'created_at': createdAt.toIso8601String(),
     };
   }

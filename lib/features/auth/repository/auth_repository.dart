@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/api_client.dart';
 import '../models/user_model.dart';
 import 'dart:developer';
@@ -8,109 +10,115 @@ class AuthRepository {
   final ApiClient _api = ApiClient();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-  // Custom exception for auth errors
+  // Use the Web Client ID as serverClientId so google_sign_in can generate
+  // tokens that the backend (Laravel Socialite) can verify.
+  late final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+    clientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'], // Required for Flutter Web
+    serverClientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'],
+  );
+
   static const String tokenKey = 'auth_token';
-  static const String rememberMeKey = 'remember_me';
 
-  /// Login with email and password
-  /// Returns UserModel on success, throws AuthException on failure
-  Future<UserModel> login(
-    String email,
-    String password, {
-    bool rememberMe = false,
-  }) async {
-    log('Attempting login for: $email');
+  /// Sign in with Google natively, then exchange the token with the backend
+  /// for a Sanctum bearer token.
+  ///
+  /// IMPORTANT: Laravel Socialite's `userFromToken()` expects a Google
+  /// **access_token** (it calls the userinfo endpoint with Bearer auth).
+  /// The API parameter is named `id_token` but we send the access_token
+  /// because that is what the backend actually processes.
+  Future<UserModel> signInWithGoogle() async {
+    log('AuthRepository: Starting Google Sign-In flow...');
 
+    // 1. Trigger native Google Sign-In
+    final GoogleSignInAccount? googleAccount = await _googleSignIn.signIn();
+    if (googleAccount == null) {
+      throw AuthException(
+        'Google Sign-In dibatalkan.',
+        isCancelled: true,
+      );
+    }
+
+    log('AuthRepository: Google account selected: ${googleAccount.email}');
+
+    // 2. Obtain tokens from Google
+    final GoogleSignInAuthentication googleAuth =
+        await googleAccount.authentication;
+
+    // The backend's Socialite::userFromToken() needs the ACCESS token,
+    // not the id_token, because it calls Google's userinfo endpoint.
+    final String? accessToken = googleAuth.accessToken;
+
+    if (accessToken == null || accessToken.isEmpty) {
+      throw AuthException(
+        'Gagal mendapatkan token dari Google. Silakan coba lagi.',
+      );
+    }
+
+    log('AuthRepository: Google access_token obtained, exchanging with backend...');
+
+    // 3. Send the access_token to the backend via the `id_token` field
+    //    (the backend parameter name is id_token, but it processes it
+    //    as an access_token through Socialite::userFromToken)
     try {
       final response = await _api.dio.post(
-        '/v1/auth/login',
-        data: {
-          'email': email,
-          'password': password,
-          'device_name': 'mobile_app',
-        },
+        '/v1/auth/google',
+        data: {'id_token': accessToken},
       );
 
-      log('Login response status: ${response.statusCode}');
-      log('Login response data: ${response.data}');
+      log('AuthRepository: Backend response status: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data;
 
-        // Validate response structure
-        if (data == null) {
-          throw AuthException('Invalid response from server');
+        if (data == null || data['success'] != true) {
+          throw AuthException('Server menolak autentikasi Google.');
         }
 
-        // Laravel format: data.token, data.user
-        // Also handle: token, user (direct format)
-        final responseData = data['data'] ?? data;
-        final token = responseData['token'] ?? responseData['access_token'];
+        final responseData = data['data'];
+        final token = responseData['token'];
         if (token == null) {
-          throw AuthException('No token received from server');
+          throw AuthException('Tidak ada token dari server.');
         }
 
-        // Store token
+        // Store the Sanctum token securely
         await _storage.write(key: tokenKey, value: token.toString());
+        log('AuthRepository: Sanctum token stored successfully');
 
-        // Store remember me preference
-        await _storage.write(key: rememberMeKey, value: rememberMe.toString());
-
-        log('Token stored successfully');
-
-        // Extract user data - handle Laravel format: data.data.user or data.user
-        final userData =
-            responseData['user'] ?? responseData['user_data'] ?? responseData;
+        // Parse user data
+        final userData = responseData['user'];
         if (userData == null) {
-          throw AuthException('No user data received from server');
+          throw AuthException('Tidak ada data pengguna dari server.');
         }
 
         return UserModel.fromJson(userData);
       }
 
-      throw AuthException('Login failed with status: ${response.statusCode}');
+      throw AuthException(
+        'Login gagal dengan status: ${response.statusCode}',
+      );
     } on DioException catch (e) {
-      log('Login DioException: ${e.type} - ${e.response?.statusCode}');
-      log('Login error response: ${e.response?.data}');
+      log('AuthRepository: DioException: ${e.type} - ${e.response?.statusCode}');
+      log('AuthRepository: Error response: ${e.response?.data}');
 
-      // Handle specific error cases
       if (e.response != null) {
         final statusCode = e.response!.statusCode;
         final errorData = e.response!.data;
-
-        // Laravel format: data.message or errors
-        final message =
-            errorData?['message'] ??
-            errorData?['error'] ??
-            errorData?['error_description'];
-
-        // Extract validation errors if present
-        String errorMessage = 'Login failed';
-        if (message != null) {
-          errorMessage = message.toString();
-        } else if (errorData?['errors'] != null) {
-          final errors = errorData['errors'] as Map<String, dynamic>;
-          if (errors.isNotEmpty) {
-            final firstField = errors.keys.first;
-            final firstError = errors[firstField];
-            if (firstError is List && firstError.isNotEmpty) {
-              errorMessage = firstError[0].toString();
-            }
-          }
-        }
+        final message = errorData?['message'] ?? errorData?['error'];
 
         if (statusCode == 401) {
           throw AuthException(
-            'Email atau password salah',
+            message?.toString() ?? 'Token Google tidak valid.',
             isInvalidCredentials: true,
           );
         } else if (statusCode == 422) {
-          throw AuthException(errorMessage, isValidationError: true);
-        } else if (statusCode == 403) {
-          throw AuthException('Akun Anda dinonaktifkan', isForbidden: true);
+          throw AuthException(
+            message?.toString() ?? 'Data tidak valid.',
+            isValidationError: true,
+          );
         }
 
-        throw AuthException(errorMessage);
+        throw AuthException(message?.toString() ?? 'Autentikasi gagal.');
       }
 
       // Network errors
@@ -131,31 +139,24 @@ class AuthRepository {
         'Terjadi kesalahan. Silakan coba lagi.',
         isNetworkError: true,
       );
-    } catch (e) {
-      if (e is AuthException) rethrow;
-      log('Login unexpected error: $e');
-      throw AuthException('Terjadi kesalahan yang tidak terduga');
     }
   }
 
-  /// Get current user from stored token
-  /// Returns UserModel if token is valid, null if not authenticated
+  /// Get current user from stored token (validates session)
   Future<UserModel?> getMe() async {
     try {
       final token = await _storage.read(key: tokenKey);
       if (token == null || token.isEmpty) {
-        log('No token found in storage');
+        log('AuthRepository: No token found in storage');
         return null;
       }
 
-      log('Fetching user data with token...');
+      log('AuthRepository: Fetching user data with stored token...');
       final response = await _api.dio.get('/v1/auth/me');
 
-      log('getMe response status: ${response.statusCode}');
-      log('getMe response data: ${response.data}');
+      log('AuthRepository: getMe response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
-        // Laravel format: data.data.user or data.user
         final data = response.data;
         final responseData = data['data'] ?? data;
         final userData = responseData['user'] ?? responseData;
@@ -164,153 +165,40 @@ class AuthRepository {
 
       return null;
     } on DioException catch (e) {
-      log('getMe DioException: ${e.type} - ${e.response?.statusCode}');
-
-      // Note: Token clearing moved to ApiClient interceptor for non-auth endpoints
-      // For auth endpoints, let getMe() handle gracefully without auto-logout
+      log('AuthRepository: getMe DioException: ${e.type} - ${e.response?.statusCode}');
       return null;
     } catch (e) {
-      log('getMe unexpected error: $e');
+      log('AuthRepository: getMe unexpected error: $e');
       return null;
     }
   }
 
-  /// Logout and clear stored token
+  /// Logout: revoke server token, sign out of Google, clear local storage
   Future<void> logout() async {
-    log('Logging out...');
+    log('AuthRepository: Logging out...');
 
     try {
-      // Try to notify server (non-blocking)
       await _api.dio.post('/v1/auth/logout');
     } catch (e) {
-      log('Logout API call failed (non-critical): $e');
-    } finally {
-      // Always clear local token
-      await _storage.delete(key: tokenKey);
-      await _storage.delete(key: rememberMeKey);
-      log('Local tokens cleared');
+      log('AuthRepository: Logout API call failed (non-critical): $e');
     }
+
+    // Sign out of Google as well
+    try {
+      await _googleSignIn.signOut();
+    } catch (e) {
+      log('AuthRepository: Google sign out failed (non-critical): $e');
+    }
+
+    // Always clear local token
+    await _storage.delete(key: tokenKey);
+    log('AuthRepository: Local token cleared');
   }
 
-  /// Check if user is logged in (has valid token)
+  /// Check if user has a stored token
   Future<bool> isLoggedIn() async {
     final token = await _storage.read(key: tokenKey);
     return token != null && token.isNotEmpty;
-  }
-
-  /// Get remember me preference
-  Future<bool> getRememberMe() async {
-    final value = await _storage.read(key: rememberMeKey);
-    return value == 'true';
-  }
-
-  /// Register new user account
-  /// Returns UserModel on success, throws AuthException on failure
-  Future<UserModel> register({
-    required String name,
-    required String email,
-    required String password,
-  }) async {
-    log('Attempting registration for: $email');
-
-    try {
-      final response = await _api.dio.post(
-        '/v1/auth/register',
-        data: {
-          'name': name,
-          'email': email,
-          'password': password,
-          'password_confirmation': password,
-        },
-      );
-
-      log('Register response status: ${response.statusCode}');
-      log('Register response data: ${response.data}');
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data;
-
-        if (data == null) {
-          throw AuthException('Invalid response from server');
-        }
-
-        // Laravel format: data.token, data.user
-        final responseData = data['data'] ?? data;
-        final token = responseData['token'] ?? responseData['access_token'];
-        if (token != null) {
-          await _storage.write(key: tokenKey, value: token.toString());
-          log('Token stored successfully');
-        }
-
-        // Extract user data
-        final userData =
-            responseData['user'] ?? responseData['user_data'] ?? responseData;
-        if (userData == null) {
-          throw AuthException('No user data received from server');
-        }
-
-        return UserModel.fromJson(userData);
-      }
-
-      throw AuthException(
-        'Registration failed with status: ${response.statusCode}',
-      );
-    } on DioException catch (e) {
-      log('Register DioException: ${e.type} - ${e.response?.statusCode}');
-      log('Register error response: ${e.response?.data}');
-
-      if (e.response != null) {
-        final statusCode = e.response!.statusCode;
-        final errorData = e.response!.data;
-
-        // Laravel format: data.message or errors
-        String errorMessage = 'Registration failed';
-
-        final message = errorData?['message'] ?? errorData?['error'];
-        if (message != null) {
-          errorMessage = message.toString();
-        } else if (errorData?['errors'] != null) {
-          final errors = errorData['errors'] as Map<String, dynamic>;
-          if (errors.isNotEmpty) {
-            final firstField = errors.keys.first;
-            final firstError = errors[firstField];
-            if (firstError is List && firstError.isNotEmpty) {
-              errorMessage = firstError[0].toString();
-            }
-          }
-        }
-
-        // Handle validation errors (422)
-        if (statusCode == 422) {
-          throw AuthException(errorMessage, isValidationError: true);
-        }
-
-        throw AuthException(errorMessage);
-      }
-
-      // Network errors
-      if (e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout) {
-        throw AuthException(
-          'Koneksi timeout. Periksa koneksi internet Anda.',
-          isNetworkError: true,
-        );
-      } else if (e.type == DioExceptionType.connectionError) {
-        throw AuthException(
-          'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
-          isNetworkError: true,
-        );
-      }
-
-      throw AuthException(
-        'Terjadi kesalahan. Silakan coba lagi.',
-        isNetworkError: true,
-      );
-    } catch (e) {
-      if (e is AuthException) rethrow;
-      log('Register unexpected error: $e');
-      throw AuthException('Terjadi kesalahan yang tidak terduga');
-    }
   }
 }
 
@@ -321,6 +209,7 @@ class AuthException implements Exception {
   final bool isValidationError;
   final bool isForbidden;
   final bool isNetworkError;
+  final bool isCancelled;
 
   AuthException(
     this.message, {
@@ -328,6 +217,7 @@ class AuthException implements Exception {
     this.isValidationError = false,
     this.isForbidden = false,
     this.isNetworkError = false,
+    this.isCancelled = false,
   });
 
   @override

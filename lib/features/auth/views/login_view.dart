@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/app_colors.dart';
 import '../providers/auth_provider.dart';
-import 'register_view.dart';
 
 class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
@@ -11,52 +10,47 @@ class LoginView extends ConsumerStatefulWidget {
   ConsumerState<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends ConsumerState<LoginView> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscureText = true;
-  bool _rememberMe = false;
+class _LoginViewState extends ConsumerState<LoginView>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _fadeIn;
+  late Animation<Offset> _slideUp;
 
   @override
   void initState() {
     super.initState();
-    _loadRememberMePreference();
-  }
-
-  Future<void> _loadRememberMePreference() async {
-    final repo = ref.read(authRepositoryProvider);
-    final rememberMe = await repo.getRememberMe();
-    if (mounted) {
-      setState(() {
-        _rememberMe = rememberMe;
-      });
-    }
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _fadeIn = CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+    );
+    _slideUp = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic),
+    ));
+    _animController.forward();
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      final success = await ref
-          .read(authStateProvider.notifier)
-          .login(
-            _emailController.text.trim(),
-            _passwordController.text,
-            rememberMe: _rememberMe,
-          );
+  Future<void> _signInWithGoogle() async {
+    final success =
+        await ref.read(authStateProvider.notifier).signInWithGoogle();
 
-      if (!success && mounted) {
-        // Error is already handled by the provider, but we can add additional UI feedback
-        final authState = ref.read(authStateProvider);
-        if (authState.error != null) {
-          _showErrorSnackBar(authState.error!);
-        }
+    if (!success && mounted) {
+      final authState = ref.read(authStateProvider);
+      if (authState.error != null) {
+        _showErrorSnackBar(authState.error!);
       }
     }
   }
@@ -93,7 +87,6 @@ class _LoginViewState extends ConsumerState<LoginView> {
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (next.error != null && next.error != previous?.error) {
         _showErrorSnackBar(next.error!);
-        // Clear error after showing
         Future.delayed(const Duration(milliseconds: 100), () {
           ref.read(authStateProvider.notifier).clearError();
         });
@@ -109,220 +102,170 @@ class _LoginViewState extends ConsumerState<LoginView> {
               horizontal: 24.0,
               vertical: 40.0,
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Logo centered at the very top
-                  Center(
-                    child: Image.asset(
-                      'assets/images/CLD.png',
-                      height: 80,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.cloud_queue,
-                        size: 80,
-                        color: AppColors.primary,
+            child: FadeTransition(
+              opacity: _fadeIn,
+              child: SlideTransition(
+                position: _slideUp,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Logo
+                    Center(
+                      child: Image.asset(
+                        'assets/images/CLD.png',
+                        height: 80,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                          Icons.cloud_queue,
+                          size: 80,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 48),
+                    const SizedBox(height: 48),
 
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text(
-                            'Masuk ke Akun',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                              letterSpacing: -0.5,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 32),
-
-                          const Text(
-                            'Email',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            decoration: const InputDecoration(
-                              hintText: 'nama@email.com',
-                              prefixIcon: Icon(
-                                Icons.email_outlined,
-                                color: AppColors.textMuted,
-                                size: 20,
+                    // Welcome Card
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Text(
+                              'Selamat Datang',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.5,
                               ),
+                              textAlign: TextAlign.center,
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Email wajib diisi';
-                              }
-                              if (!RegExp(
-                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                              ).hasMatch(value)) {
-                                return 'Masukkan email yang valid';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-
-                          const Text(
-                            'Password',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: _obscureText,
-                            textInputAction: TextInputAction.done,
-                            onFieldSubmitted: (_) => _login(),
-                            decoration: InputDecoration(
-                              hintText: 'Masukkan password',
-                              prefixIcon: const Icon(
-                                Icons.lock_outlined,
-                                color: AppColors.textMuted,
-                                size: 20,
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Masuk dengan akun Google untuk\nmengakses penyimpanan cloud Anda.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                                height: 1.5,
                               ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscureText
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                  color: AppColors.textMuted,
-                                  size: 20,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 40),
+
+                            // Decorative divider with cloud icon
+                            Row(
+                              children: [
+                                const Expanded(
+                                  child:
+                                      Divider(color: AppColors.border),
                                 ),
-                                onPressed: () => setState(
-                                  () => _obscureText = !_obscureText,
-                                ),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Password wajib diisi';
-                              }
-                              if (value.length < 6) {
-                                return 'Password minimal 6 karakter';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Checkbox(
-                                  value: _rememberMe,
-                                  onChanged: (v) {
-                                    setState(() {
-                                      _rememberMe = v ?? false;
-                                    });
-                                  },
-                                  activeColor: AppColors.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
+                                Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryLight,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.cloud_outlined,
+                                    color: AppColors.primary,
+                                    size: 20,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Ingat Saya',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
+                                const Expanded(
+                                  child:
+                                      Divider(color: AppColors.border),
                                 ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 32),
-
-                          SizedBox(
-                            height: 48,
-                            child: ElevatedButton(
-                              onPressed: authState.isLoading ? null : _login,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: authState.isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Masuk',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                              ],
                             ),
-                          ),
-                        ],
+
+                            const SizedBox(height: 32),
+
+                            // Google Sign-In Button
+                            SizedBox(
+                              height: 52,
+                              child: OutlinedButton(
+                                onPressed: authState.isLoading
+                                    ? null
+                                    : _signInWithGoogle,
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  side: const BorderSide(
+                                    color: AppColors.border,
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: authState.isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          // Google "G" logo using text
+                                          Container(
+                                            width: 24,
+                                            height: 24,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: const Center(
+                                              child: Text(
+                                                'G',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF4285F4),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          const Text(
+                                            'Masuk dengan Google',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Belum punya akun? ',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
+                    const SizedBox(height: 32),
+
+                    // Footer info
+                    const Text(
+                      'Dengan masuk, Anda menyetujui\nSyarat & Ketentuan dan Kebijakan Privasi.',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                        height: 1.5,
                       ),
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const RegisterView(),
-                          ),
-                        ),
-                        child: const Text(
-                          'Daftar Sekarang',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
