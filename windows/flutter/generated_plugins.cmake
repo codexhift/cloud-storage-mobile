@@ -3,19 +3,15 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-<<<<<<< HEAD
-  flutter_secure_storage_windows
-  permission_handler_windows
-=======
   connectivity_plus
   flutter_secure_storage_windows
   permission_handler_windows
   share_plus
   url_launcher_windows
->>>>>>> c55dadda0650e092a47c09fa54ad14787c0921a3
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
+  jni
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

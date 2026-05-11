@@ -92,8 +92,8 @@ class AuthRepository {
 }
 
   // Custom exception for auth errors
-  static const String tokenKey = 'auth_token';
-  static const String rememberMeKey = 'remember_me';
+  const String tokenKey = 'auth_token';
+  const String rememberMeKey = 'remember_me';
 
   /// Login with email and password
   /// Returns UserModel on success, throws AuthException on failure

@@ -289,6 +289,6 @@ class ProfileView extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    )
   }
 }

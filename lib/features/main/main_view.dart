@@ -29,8 +29,9 @@ class _MainViewState extends State<MainView> {
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-
-          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+          border: Border(
+            top: BorderSide(color: AppColors.border, width: 1),
+          ),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
@@ -55,33 +56,6 @@ class _MainViewState extends State<MainView> {
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
-
-          color: Colors.white,
-          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
-        ),
-        child: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (index) => setState(() => _currentIndex = index),
-          backgroundColor: Colors.white,
-          indicatorColor: AppColors.primary.withValues(alpha: 0.1),
-          elevation: 0,
-          height: 65,
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.grid_view_outlined, color: AppColors.textSecondary),
-              selectedIcon: Icon(Icons.grid_view_rounded, color: AppColors.primary),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.folder_outlined, color: AppColors.textSecondary),
-              selectedIcon: Icon(Icons.folder_rounded, color: AppColors.primary),
-              label: 'Files',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline, color: AppColors.textSecondary),
-              selectedIcon: Icon(Icons.person, color: AppColors.primary),
-
               label: 'Profile',
             ),
           ],

@@ -6,12 +6,6 @@
 
 #include "generated_plugin_registrant.h"
 
-<<<<<<< HEAD
-#include <flutter_secure_storage_windows/flutter_secure_storage_windows_plugin.h>
-#include <permission_handler_windows/permission_handler_windows_plugin.h>
-
-void RegisterPlugins(flutter::PluginRegistry* registry) {
-=======
 #include <connectivity_plus/connectivity_plus_windows_plugin.h>
 #include <flutter_secure_storage_windows/flutter_secure_storage_windows_plugin.h>
 #include <permission_handler_windows/permission_handler_windows_plugin.h>
@@ -21,16 +15,12 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   ConnectivityPlusWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("ConnectivityPlusWindowsPlugin"));
->>>>>>> c55dadda0650e092a47c09fa54ad14787c0921a3
   FlutterSecureStorageWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FlutterSecureStorageWindowsPlugin"));
   PermissionHandlerWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("PermissionHandlerWindowsPlugin"));
-<<<<<<< HEAD
-=======
   SharePlusWindowsPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("SharePlusWindowsPluginCApi"));
   UrlLauncherWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("UrlLauncherWindows"));
->>>>>>> c55dadda0650e092a47c09fa54ad14787c0921a3
 }

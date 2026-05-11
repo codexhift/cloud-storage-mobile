@@ -23,9 +23,13 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive width
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = screenWidth > 400 ? 160.0 : (screenWidth - 80) / 2;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: cardWidth,
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(16),
@@ -40,30 +44,33 @@ class StatCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          /// TOP ROW
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(12),
+                  color: iconBg.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: Colors.white, size: 20),
+                child: Icon(icon, color: iconBg, size: 18),
               ),
+
+              /// Index kecil kanan atas
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   index,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 10,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textMuted,
                   ),
@@ -71,49 +78,16 @@ class StatCard extends StatelessWidget {
               ),
             ],
           ),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
 
-    // Responsive width based on screen width
-    final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = screenWidth > 400 ? 160.0 : (screenWidth - 80) / 2;
+          const SizedBox(height: 10),
 
-    return Container(
-      width: cardWidth,
-      // Height follows content (shrink-wrap behavior)
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Icon container
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: iconBg.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: iconBg, size: 18),
-          ),
-          const SizedBox(height: 8),
-
-          // Value - with overflow protection
+          /// VALUE
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 18,
-
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
               letterSpacing: -0.5,
@@ -121,43 +95,30 @@ class StatCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
 
-          const SizedBox(height: 2),
-
-          // Label
+          /// LABEL
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 11,
-
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
             ),
           ),
+
           const SizedBox(height: 2),
 
-          Text(
-            sub,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppColors.textMuted,
-            ),
-        
-
-
-          // Subtitle - with overflow protection
+          /// SUBTITLE
           Text(
             sub,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
-
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.textMuted,
+            ),
           ),
         ],
       ),
