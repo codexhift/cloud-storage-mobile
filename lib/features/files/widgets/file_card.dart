@@ -16,19 +16,35 @@ class FileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ext = file.ekstensi.toLowerCase();
+    final ext = file.extension.toLowerCase();
     Color iconColor = AppColors.blue;
     Color iconBg = AppColors.blueLight;
-    
-    if (['jpg','jpeg','png','gif','webp'].contains(ext)) {
+    IconData fileIcon = Icons.insert_drive_file;
+
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].contains(ext)) {
       iconColor = AppColors.violet;
       iconBg = AppColors.violetLight;
-    } else if (['mp4','webm','mov'].contains(ext)) {
+      fileIcon = Icons.image_outlined;
+    } else if (['mp4', 'webm', 'mov', 'avi', 'mkv'].contains(ext)) {
       iconColor = AppColors.amber;
       iconBg = AppColors.amberLight;
+      fileIcon = Icons.videocam_outlined;
     } else if (ext == 'pdf') {
       iconColor = AppColors.red;
       iconBg = AppColors.redLight;
+      fileIcon = Icons.picture_as_pdf_outlined;
+    } else if (['doc', 'docx', 'txt', 'rtf'].contains(ext)) {
+      iconColor = AppColors.blue;
+      iconBg = AppColors.blueLight;
+      fileIcon = Icons.description_outlined;
+    } else if (['xls', 'xlsx', 'csv'].contains(ext)) {
+      iconColor = AppColors.green;
+      iconBg = AppColors.greenLight;
+      fileIcon = Icons.table_chart_outlined;
+    } else if (['zip', 'rar', '7z', 'tar', 'gz'].contains(ext)) {
+      iconColor = AppColors.amber;
+      iconBg = AppColors.amberLight;
+      fileIcon = Icons.folder_zip_outlined;
     }
 
     return InkWell(
@@ -51,12 +67,27 @@ class FileCard extends StatelessWidget {
                   color: iconBg,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.insert_drive_file, color: iconColor, size: 32),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(fileIcon, color: iconColor, size: 32),
+                    if (file.isStarred)
+                      const Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Icon(
+                          Icons.star_rounded,
+                          color: AppColors.amber,
+                          size: 18,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              file.namaTampilan,
+              file.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -69,21 +100,26 @@ class FileCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  file.ukuranFormat,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textMuted,
+                Expanded(
+                  child: Text(
+                    file.sizeFormatted,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ),
-                IconButton(
-                  onPressed: onMoreTap,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.more_horiz, size: 20, color: AppColors.textMuted),
-                )
+                InkWell(
+                  onTap: onMoreTap,
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.more_horiz,
+                        size: 20, color: AppColors.textMuted),
+                  ),
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),

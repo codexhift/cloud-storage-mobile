@@ -103,32 +103,34 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> login(
-    String email,
-    String password, {
-    bool rememberMe = false,
-  }) async {
-    log('AuthNotifier: Login attempt for $email');
+  /// Sign in with Google (the only auth method)
+  Future<bool> signInWithGoogle() async {
+    log('AuthNotifier: Starting Google Sign-In...');
 
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       final repo = ref.read(authRepositoryProvider);
-      final user = await repo.login(email, password, rememberMe: rememberMe);
+      final user = await repo.signInWithGoogle();
 
-      log('AuthNotifier: Login successful for ${user.email}');
+      log('AuthNotifier: Google Sign-In successful for ${user.email}');
 
       state = AuthState(user: user, isAuthenticated: true, isLoading: false);
 
       return true;
     } on AuthException catch (e) {
-      log('AuthNotifier: Login failed - ${e.message}');
+      log('AuthNotifier: Google Sign-In failed - ${e.message}');
+
+      // Don't show error for user-cancelled sign-in
+      if (e.isCancelled) {
+        state = state.copyWith(isLoading: false);
+        return false;
+      }
 
       state = state.copyWith(isLoading: false, error: e.message);
-
       return false;
     } catch (e) {
-      log('AuthNotifier: Login unexpected error: $e');
+      log('AuthNotifier: Google Sign-In unexpected error: $e');
 
       state = state.copyWith(
         isLoading: false,
@@ -174,47 +176,6 @@ final authStateProvider = NotifierProvider<AuthNotifier, AsyncValue<UserModel?>>
       // Restore callback
       ApiClient.onUnauthorized = previousCallback;
       state = const AuthState(isAuthenticated: false, isLoading: false);
-    }
-  }
-
-  /// Register a new user
-  Future<bool> register({
-    required String name,
-    required String email,
-    required String password,
-  }) async {
-    log('AuthNotifier: Registration attempt for $email');
-
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    try {
-      final repo = ref.read(authRepositoryProvider);
-      final user = await repo.register(
-        name: name,
-        email: email,
-        password: password,
-      );
-
-      log('AuthNotifier: Registration successful for ${user.email}');
-
-      state = AuthState(user: user, isAuthenticated: true, isLoading: false);
-
-      return true;
-    } on AuthException catch (e) {
-      log('AuthNotifier: Registration failed - ${e.message}');
-
-      state = state.copyWith(isLoading: false, error: e.message);
-
-      return false;
-    } catch (e) {
-      log('AuthNotifier: Registration unexpected error: $e');
-
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.',
-      );
-
-      return false;
     }
   }
 

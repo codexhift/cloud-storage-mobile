@@ -2,20 +2,18 @@ import 'file_model.dart';
 
 class FolderModel {
   final int id;
-  final String namaFolder;
+  final String name;
   final int? parentId;
-  final int idPengguna;
-  final bool belongsToSharedFolder;
+  final int userId;
   final DateTime createdAt;
   final List<FolderModel> children;
   final List<FileModel> files;
 
   FolderModel({
     required this.id,
-    required this.namaFolder,
+    required this.name,
     this.parentId,
-    required this.idPengguna,
-    required this.belongsToSharedFolder,
+    required this.userId,
     required this.createdAt,
     this.children = const [],
     this.files = const [],
@@ -24,10 +22,10 @@ class FolderModel {
   factory FolderModel.fromJson(Map<String, dynamic> json) {
     return FolderModel(
       id: json['id'],
-      namaFolder: json['nama_folder'] ?? '',
+      // Support both Indonesian (legacy) and English field names
+      name: json['name'] ?? json['nama_folder'] ?? '',
       parentId: json['parent_id'],
-      idPengguna: json['id_pengguna'] ?? 0,
-      belongsToSharedFolder: json['belongs_to_shared_folder'] ?? false,
+      userId: json['user_id'] ?? json['id_pengguna'] ?? 0,
       createdAt: DateTime.parse(json['created_at']),
       children: (json['children'] as List<dynamic>?)
               ?.map((e) => FolderModel.fromJson(e))
