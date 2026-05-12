@@ -1,9 +1,7 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
-
 import 'package:flutter/foundation.dart';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -12,43 +10,21 @@ class ApiClient {
   late final Dio dio;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-
-
   // Callback for 401 unauthorized - used for auto-logout
   static Function()? onUnauthorized;
-
 
   factory ApiClient() {
     return _instance;
   }
 
   ApiClient._internal() {
-
-    final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:8000/api';
-    
-
-
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'auth_token');
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        return handler.next(options);
-      },
-      onError: (DioException e, handler) async {
-        log('API Error: ${e.response?.statusCode} - ${e.requestOptions.path}');
-        return handler.next(e);
-      },
-    ));
-
     // Select API URL based on platform
     // Mobile (Android/iOS emulator) -> API_KEY_MOBILE
     // Web -> API_KEY_WEB
     // Note: Base URL is /api (without /v1)
     // - Auth endpoints use /v1/auth/... (handled in repository)
     // - File/Folder endpoints use /files/..., /folders/... (without v1)
-    
+
     String baseUrl;
     if (kIsWeb) {
       baseUrl = dotenv.env['API_KEY_WEB'] ?? 'http://localhost:8000/api';
@@ -114,6 +90,5 @@ class ApiClient {
   Future<bool> hasToken() async {
     final token = await _storage.read(key: 'auth_token');
     return token != null && token.isNotEmpty;
-
   }
 }

@@ -10,94 +10,6 @@ class AuthRepository {
   final ApiClient _api = ApiClient();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-<<<<<<< HEAD
-
-  Future<UserModel?> login(String email, String password) async {
-  try {
-    final response = await _api.dio.post('v1/auth/login', data: {
-      'email': email,
-      'password': password,
-      'device_name': 'mobile_app',
-    });
-
-    print("LOGIN RESPONSE: ${response.data}");
-
-    if (response.statusCode == 200) {
-      final data = response.data;
-
-      // simpan token
-      final token =
-        data['token'] ??
-        data['access_token'] ??
-        data['data']?['token'] ??
-        data['data']?['access_token'];
-
-      print("TOKEN FROM API: $token");
-      if (token != null) {
-        await _storage.write(key: 'auth_token', value: token);
-      }
-
-      log("FULL RESPONSE: ", response.data);
-
-      // ambil user (support banyak kemungkinan struktur)
-      final userJson =
-          data['user'] ??
-          data['data']?['user'] ??
-          data;
-
-      return UserModel.fromJson(userJson);
-    }
-
-    return null;
-  } on DioException catch (e) {
-    print('Login failed: ${e.response?.data}');
-    throw Exception(e.response?.data['message'] ?? 'Failed to login');
-  }
-}
-
-  Future<UserModel?> getMe() async {
-  try {
-    final token = await _storage.read(key: 'auth_token');
-    print("TOKEN: $token");
-
-    if (token == null) return null;
-
-    final response = await _api.dio.get('/auth/me');
-
-    print("GET ME RESPONSE: ${response.data}");
-
-    if (response.statusCode == 200) {
-      final data = response.data;
-
-      final userJson =
-          data['user'] ??
-          data['data']?['user'] ??
-          data;
-
-      return UserModel.fromJson(userJson);
-    }
-
-    return null;
-  } catch (e) {
-    log('Error getting user: $e');
-    return null;
-  }
-}
-  Future<void> logout() async {
-    try {
-      await _api.dio.post('v1/auth/logout');
-    } catch (e) {
-      log('Logout API call failed, still clearing local token.');
-    } finally {
-      await _storage.delete(key: 'auth_token');
-    }
-  }
-}
-
-  // Custom exception for auth errors
-  const String tokenKey = 'auth_token';
-  const String rememberMeKey = 'remember_me';
-=======
   // Use the Web Client ID as serverClientId so google_sign_in can generate
   // tokens that the backend (Laravel Socialite) can verify.
   late final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -107,7 +19,6 @@ class AuthRepository {
   );
 
   static const String tokenKey = 'auth_token';
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
 
   /// Sign in with Google natively, then exchange the token with the backend
   /// for a Sanctum bearer token.
@@ -312,4 +223,3 @@ class AuthException implements Exception {
   @override
   String toString() => message;
 }
-

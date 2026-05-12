@@ -11,67 +11,28 @@ class ProfileView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
-    final user = ref.watch(authStateProvider).value;
-
     final user = ref.watch(authStateProvider).user;
     final storageAsync = ref.watch(storageInfoProvider);
-
 
     if (user == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
     final usedMB = user.storageUsed / (1024 * 1024);
-<<<<<<< HEAD
-    final totalMB = user.storageQuota / (1024 * 1024);
-    final freeMB = totalMB - usedMB;
-
-    final pct = user.storageQuota > 0 ? (user.storageUsed / user.storageQuota) * 100 : 0;
-
-=======
     final totalGB = user.storageQuota / (1024 * 1024 * 1024);
     final freeGB = totalGB - (usedMB / 1024);
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
     final pct = user.storageQuota > 0
         ? (user.storageUsed / user.storageQuota) * 100
         : 0;
 
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-
-        title: const Text('Profil Akun', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-
         title: const Text(
           'Profil Akun',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-
       ),
-<<<<<<< HEAD
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Informasi akun dan pengaturan keamanan.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-
-
-
-            // User Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
-=======
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(storageInfoProvider);
@@ -86,7 +47,6 @@ class ProfileView extends ConsumerWidget {
               const Text(
                 'Informasi akun dan penyimpanan Anda.',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
               ),
               const SizedBox(height: 24),
 
@@ -102,7 +62,7 @@ class ProfileView extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        // Avatar: show Google profile photo if available
+                        // Avatar
                         Container(
                           width: 64,
                           height: 64,
@@ -137,18 +97,6 @@ class ProfileView extends ConsumerWidget {
                                   ),
                                 ),
                         ),
-<<<<<<< HEAD
-                        child: Center(
-                          child: Text(
-                            user.name[0].toUpperCase(),
-
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-=======
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -263,9 +211,7 @@ class ProfileView extends ConsumerWidget {
                               minHeight: 8,
                               backgroundColor: AppColors.primaryRing,
                               color: AppColors.primary,
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                             ),
-
                           ),
                         ],
                       ),
@@ -298,8 +244,7 @@ class ProfileView extends ConsumerWidget {
                   children: [
                     const Text(
                       'Aksi Pengguna',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                     const SizedBox(height: 12),
                     Material(
@@ -322,9 +267,7 @@ class ProfileView extends ConsumerWidget {
                                 ElevatedButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
-                                    ref
-                                        .read(authStateProvider.notifier)
-                                        .logout();
+                                    ref.read(authStateProvider.notifier).logout();
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.danger,
@@ -348,8 +291,7 @@ class ProfileView extends ConsumerWidget {
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.logout,
-                                  color: AppColors.danger, size: 20),
+                              Icon(Icons.logout, color: AppColors.danger, size: 20),
                               SizedBox(width: 12),
                               Text(
                                 'Keluar dari Akun',
@@ -363,69 +305,6 @@ class ProfileView extends ConsumerWidget {
                           ),
                         ),
                       ),
-<<<<<<< HEAD
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user.name,
-
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-
-                                const Icon(Icons.calendar_month, size: 14, color: AppColors.textSecondary),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Bergabung sejak ${DateFormat.yMMM().format(user.createdAt)}',
-                                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                ),
-                              ],
-                            )
-
-                                const Icon(
-                                  Icons.calendar_month,
-                                  size: 14,
-                                  color: AppColors.textSecondary,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Bergabung sejak ${DateFormat.yMMM().format(user.createdAt)}',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Storage usage visually identical to web
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.primaryRing),
-=======
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                     ),
                   ],
                 ),
@@ -482,10 +361,8 @@ class ProfileView extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           ...info.categories.entries.map((entry) {
-            final color =
-                categoryColors[entry.key] ?? AppColors.textSecondary;
-            final icon =
-                categoryIcons[entry.key] ?? Icons.folder_outlined;
+            final color = categoryColors[entry.key] ?? AppColors.textSecondary;
+            final icon = categoryIcons[entry.key] ?? Icons.folder_outlined;
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
@@ -503,72 +380,12 @@ class ProfileView extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-<<<<<<< HEAD
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-
-                                const Text('PENGGUNAAN PENYIMPANAN', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary, letterSpacing: 0.5)),
-
-                                const Text(
-                                  'PENGGUNAAN PENYIMPANAN',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-
-                                const SizedBox(height: 4),
-                                RichText(
-                                  text: TextSpan(
-                                    text: usedMB.toStringAsFixed(2),
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                    children: const [
-                                      TextSpan(
-                                        text: ' MB digunakan',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.normal,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              '${freeMB.toStringAsFixed(1)} MB Tersisa',
-
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
-                            )
-
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-
-                          ],
-=======
                         Text(
                           entry.key,
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
                           ),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                         ),
                         Text(
                           '${entry.value.count} files · ${entry.value.sizeFormatted}',
@@ -580,72 +397,12 @@ class ProfileView extends ConsumerWidget {
                       ],
                     ),
                   ),
-<<<<<<< HEAD
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Actions
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  const Text('Aksi Pengguna', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-
-                  const Text(
-                    'Aksi Pengguna',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-
-                  const SizedBox(height: 12),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                      child: Container(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.logout, color: Colors.orange, size: 20),
-                            SizedBox(width: 12),
-
-                            Text('Keluar dari Sesi', style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
-
-                            Text(
-                              'Keluar dari Sesi',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-
-                          ],
-                        ),
-                      ),
-=======
                   Text(
                     '${entry.value.percent.toStringAsFixed(1)}%',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                       color: color,
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                     ),
                   ),
                 ],
@@ -654,6 +411,6 @@ class ProfileView extends ConsumerWidget {
           }),
         ],
       ),
-    )
+    );
   }
 }
