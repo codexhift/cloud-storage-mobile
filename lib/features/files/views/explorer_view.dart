@@ -1,20 +1,15 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-<<<<<<< HEAD
 
-=======
-import 'package:file_picker/file_picker.dart';
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
 import '../../../core/app_colors.dart';
 import '../../dashboard/widgets/cld_search_bar.dart';
+import '../models/file_model.dart';
+import '../models/folder_model.dart';
 import '../providers/file_provider.dart';
 import '../providers/search_provider.dart';
-<<<<<<< HEAD
 import '../widgets/file_card.dart';
-=======
-import '../models/folder_model.dart';
-import '../models/file_model.dart';
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
+import 'package:file_picker/file_picker.dart' as fp;
 
 class ExplorerView extends ConsumerStatefulWidget {
   final int folderId;
@@ -83,9 +78,13 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
   }
 
   Future<void> _uploadFile() async {
-    final result = await FilePicker.pickFiles(withData: true);
-    if (result == null || result.files.isEmpty) return;
+    // Ganti import di atas file:
 
+// Lalu di _uploadFile:
+final result = await fp.FilePicker.platform.pickFiles(
+  allowMultiple: false,
+  withData: true,
+);
     final file = result.files.first;
     if (file.bytes == null) {
       if (mounted) {
@@ -149,18 +148,14 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: AppColors.borderLight)),
+                  border: Border(
+                      bottom: BorderSide(color: AppColors.borderLight)),
                 ),
                 child: Row(
                   children: [
-<<<<<<< HEAD
-                    const Expanded(
-                      child: Text(
-                        'File Options',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-=======
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -188,33 +183,22 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
                                 fontSize: 12, color: AppColors.textMuted),
                           ),
                         ],
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () => Navigator.pop(context),
-                    )
+                    ),
                   ],
                 ),
               ),
-<<<<<<< HEAD
-              _buildOption(context, Icons.download_rounded, 'Download', () {}),
-              _buildOption(context, Icons.edit_outlined, 'Rename', () {}),
-              _buildOption(context, Icons.share_outlined, 'Share', () {}),
-              _buildOption(
-                context,
-                Icons.delete_outline_rounded,
-                'Delete',
-                () {},
-=======
               const Divider(height: 24),
-              _buildOption(ctx, Icons.download_rounded, 'Download', () {
-                // Download handled externally
-              }),
+              _buildOption(ctx, Icons.download_rounded, 'Download', () {}),
               _buildOption(
                 ctx,
-                f.isStarred ? Icons.star_rounded : Icons.star_outline_rounded,
+                f.isStarred
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
                 f.isStarred ? 'Hapus Bintang' : 'Beri Bintang',
                 () async {
                   try {
@@ -239,11 +223,7 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
                 ctx,
                 Icons.delete_outline_rounded,
                 'Hapus',
-                () async {
-                  // File delete = move to trash, but endpoint not in files
-                  // For now, this is a placeholder
-                },
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
+                () async {},
                 color: AppColors.danger,
               ),
               const SizedBox(height: 12),
@@ -254,8 +234,7 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
     );
   }
 
-<<<<<<< HEAD
-  static Widget _buildOption(
+  Widget _buildOption(
     BuildContext context,
     IconData icon,
     String label,
@@ -271,17 +250,6 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
           fontWeight: FontWeight.w500,
         ),
       ),
-=======
-  Widget _buildOption(
-      BuildContext context, IconData icon, String label, VoidCallback onTap,
-      {Color? color}) {
-    return ListTile(
-      leading: Icon(icon, color: color ?? AppColors.textSecondary),
-      title: Text(label,
-          style: TextStyle(
-              color: color ?? AppColors.textPrimary,
-              fontWeight: FontWeight.w500)),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
       onTap: () {
         Navigator.pop(context);
         onTap();
@@ -353,7 +321,9 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
                     ],
                   ),
                 );
-                if (newName != null && newName.isNotEmpty && newName != f.name) {
+                if (newName != null &&
+                    newName.isNotEmpty &&
+                    newName != f.name) {
                   try {
                     final repo = ref.read(fileRepositoryProvider);
                     await repo.renameFolder(f.id, newName);
@@ -402,15 +372,7 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
   // ─── Build ───────────────────────────────────────────────────────────
 
   @override
-<<<<<<< HEAD
-  Widget build(BuildContext context, WidgetRef ref) {
-    final asyncData = folderId == 0
-        ? ref.watch(rootFolderProvider)
-        : ref.watch(folderContentsProvider(folderId));
-
-=======
   Widget build(BuildContext context) {
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
     final searchText = ref.watch(fileSearchProvider);
 
     return Scaffold(
@@ -423,13 +385,11 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
       ),
       body: Column(
         children: [
-          // Upload progress indicator
           if (_isUploading)
             const LinearProgressIndicator(
               color: AppColors.primary,
               backgroundColor: AppColors.primaryLight,
             ),
-
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: CldSearchBar(
@@ -439,107 +399,10 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
           ),
           Expanded(
             child: RefreshIndicator(
-<<<<<<< HEAD
-              onRefresh: () async {
-                if (folderId == 0) {
-                  ref.invalidate(rootFolderProvider);
-                } else {
-                  ref.invalidate(folderContentsProvider(folderId));
-                }
-              },
-              child: asyncData.when(
-                data: (folder) {
-                  final folders = folder.children
-                      .where((f) => f.namaFolder
-                          .toLowerCase()
-                          .contains(searchText.toLowerCase()))
-                      .toList();
-
-                  final files = folder.files
-                      .where((f) => f.namaTampilan
-                          .toLowerCase()
-                          .contains(searchText.toLowerCase()))
-                      .toList();
-
-                  if (folders.isEmpty && files.isEmpty) {
-                    return _buildEmptyState(searchText.isNotEmpty);
-                  }
-
-                  return ListView(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 16),
-                    children: [
-                      if (folders.isNotEmpty) ...[
-                        const Text(
-                          'Folders',
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textSecondary),
-                        ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 2.5,
-                          ),
-                          itemCount: folders.length,
-                          itemBuilder: (context, index) {
-                            final f = folders[index];
-                            return _buildFolderCard(context, f);
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                      if (files.isNotEmpty) ...[
-                        const Text(
-                          'Files',
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textSecondary),
-                        ),
-                        const SizedBox(height: 12),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 0.82,
-                          ),
-                          itemCount: files.length,
-                          itemBuilder: (context, index) {
-                            final f = files[index];
-                            return FileCard(
-                              file: f,
-                              onTap: () {},
-                              onMoreTap: () =>
-                                  _showFileOptions(context, f),
-                            );
-                          },
-                        ),
-                      ],
-                    ],
-                  );
-                },
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error: $e')),
-              ),
-=======
               onRefresh: () async => _refresh(),
               child: widget.folderId == 0
                   ? _buildRootView(searchText)
                   : _buildFolderView(searchText),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
             ),
           ),
         ],
@@ -635,7 +498,8 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
@@ -751,16 +615,10 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-<<<<<<< HEAD
-          builder: (_) => ExplorerView(folderId: f.id),
-        ),
-      ),
-=======
           builder: (_) => ExplorerView(folderId: f.id, folderName: f.name),
         ),
       ),
       onLongPress: () => _showFolderOptions(context, f),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
@@ -775,11 +633,7 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-<<<<<<< HEAD
-                f.namaFolder,
-=======
                 f.name,
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -802,31 +656,19 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
               color: AppColors.textMuted.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Text(
-<<<<<<< HEAD
-            isSearch
-                ? 'No items match your search'
-                : 'Folder is empty',
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, fontSize: 18),
-=======
             isSearch ? 'Tidak ada hasil' : 'Folder kosong',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
+            style:
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 8),
           Text(
             isSearch
-<<<<<<< HEAD
-                ? 'Try a different keyword.'
-                : 'Upload files or create folders here.',
-=======
                 ? 'Coba kata kunci lain.'
                 : 'Upload file atau buat folder baru.',
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
             style: const TextStyle(color: AppColors.textSecondary),
           ),
         ],
       ),
     );
   }
-}
+} 

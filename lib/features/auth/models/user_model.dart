@@ -42,6 +42,7 @@ class UserModel {
       'avatar': avatar,
       'google_id': googleId,
       'created_at': createdAt.toIso8601String(),
+      
     };
   }
 }

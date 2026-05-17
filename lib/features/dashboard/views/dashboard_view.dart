@@ -6,11 +6,7 @@ import '../../../../core/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../files/providers/file_provider.dart';
 import '../../files/providers/search_provider.dart';
-<<<<<<< HEAD
-
-=======
 import '../../files/providers/storage_provider.dart';
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
 import '../widgets/stat_card.dart';
 import '../widgets/storage_usage_bar.dart';
 import '../widgets/cld_search_bar.dart';
@@ -21,13 +17,7 @@ class DashboardView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
-<<<<<<< HEAD
-    final user = authState.value;
-
-    final recentFilesAsync = ref.watch(recentFilesProvider);
-=======
     final user = authState.user;
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
     final searchText = ref.watch(fileSearchProvider);
     final storageAsync = ref.watch(storageInfoProvider);
 
@@ -44,15 +34,11 @@ class DashboardView extends ConsumerWidget {
         hour < 12 ? 'morning' : (hour < 17 ? 'afternoon' : 'evening');
 
     final usedMB = (user.storageUsed / (1024 * 1024)).toStringAsFixed(1);
-<<<<<<< HEAD
-    final totalMB = (user.storageQuota / (1024 * 1024)).toStringAsFixed(0);
-
-=======
-    final totalGB = (user.storageQuota / (1024 * 1024 * 1024)).toStringAsFixed(0);
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
+    final totalGB =
+        (user.storageQuota / (1024 * 1024 * 1024)).toStringAsFixed(0);
     final pct =
         (user.storageUsed / (user.storageQuota > 0 ? user.storageQuota : 1)) *
-        100;
+            100;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -68,21 +54,6 @@ class DashboardView extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-<<<<<<< HEAD
-            icon: CircleAvatar(
-              radius: 14,
-              backgroundColor: AppColors.primary,
-              child: Text(
-                firstName[0].toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            onPressed: () {},
-=======
             onPressed: () {},
             icon: user.avatar != null
                 ? CircleAvatar(
@@ -102,12 +73,10 @@ class DashboardView extends ConsumerWidget {
                       ),
                     ),
                   ),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
           ),
           const SizedBox(width: 8),
         ],
       ),
-
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(storageInfoProvider);
@@ -139,55 +108,34 @@ class DashboardView extends ConsumerWidget {
               ),
               const Text(
                 'Monitor your storage and recent files.',
-                style:
-                    TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
               ),
 
               const SizedBox(height: 24),
 
-<<<<<<< HEAD
               /// STAT CARDS
-=======
-              // StatCards
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
               SizedBox(
                 height: 130,
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-<<<<<<< HEAD
-=======
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                     children: [
                       StatCard(
                         label: 'Storage Used',
                         value: '$usedMB MB',
-<<<<<<< HEAD
-                        sub:
-                            '${pct.toStringAsFixed(1)}% of $totalMB MB',
-                        icon: Icons.pie_chart,
-=======
                         sub: '${pct.toStringAsFixed(1)}% of $totalGB GB',
                         icon: Icons.donut_large_rounded,
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                         bg: Colors.white,
                         iconBg: AppColors.primary,
                         index: '01',
                       ),
                       const SizedBox(width: 12),
-<<<<<<< HEAD
-                      StatCard(
-                        label: 'Remaining',
-                        value:
-                            '${((user.storageQuota - user.storageUsed) / (1024 * 1024)).toStringAsFixed(0)} MB',
-                        sub: 'Free space available',
-                        icon: Icons.cloud_done,
-                        bg: Colors.white,
-                        iconBg: AppColors.violet,
-                        index: '02',
-=======
+
                       // Show dynamic stats from storage API
                       storageAsync.when(
                         data: (info) {
@@ -268,7 +216,6 @@ class DashboardView extends ConsumerWidget {
                             ),
                           ],
                         ),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                       ),
                     ],
                   ),
@@ -288,8 +235,10 @@ class DashboardView extends ConsumerWidget {
                 children: [
                   const Text(
                     'Recent Activity',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {},
@@ -303,26 +252,16 @@ class DashboardView extends ConsumerWidget {
                   ),
                 ],
               ),
-<<<<<<< HEAD
 
               /// RECENT FILES
-              recentFilesAsync.when(
-                data: (files) {
-                  final filtered = files
-                      .where((f) => f.namaTampilan
-                          .toLowerCase()
-                          .contains(searchText.toLowerCase()))
-=======
-              // Recent files from the files endpoint
               ref.watch(filesProvider(null)).when(
                 data: (files) {
-                  final filteredFiles = files
+                  final filtered = files
                       .where(
-                        (f) => f.name.toLowerCase().contains(
-                          searchText.toLowerCase(),
-                        ),
+                        (f) => f.name
+                            .toLowerCase()
+                            .contains(searchText.toLowerCase()),
                       )
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
                       .toList();
 
                   if (filtered.isEmpty) {
@@ -333,15 +272,13 @@ class DashboardView extends ConsumerWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: filtered.take(5).length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: 8),
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (_, i) => _buildFileTile(filtered[i]),
                   );
                 },
                 loading: () =>
                     const Center(child: CircularProgressIndicator()),
-                error: (_, __) =>
-                    const Text('Error loading activity'),
+                error: (_, __) => const Text('Error loading activity'),
               ),
 
               const SizedBox(height: 40),
@@ -354,24 +291,15 @@ class DashboardView extends ConsumerWidget {
 
   /// FILE TILE
   Widget _buildFileTile(dynamic file) {
-<<<<<<< HEAD
-    final ext = file.ekstensi.toLowerCase();
+    final ext = file.extension.toLowerCase();
 
     Color iconColor = AppColors.primary;
-    if (['jpg', 'jpeg', 'png'].contains(ext)) {
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {
       iconColor = AppColors.violet;
     } else if (ext == 'pdf') {
       iconColor = AppColors.danger;
     }
 
-=======
-    final ext = file.extension.toLowerCase();
-    Color iconColor = AppColors.primary;
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext)) {
-      iconColor = AppColors.violet;
-    }
-    if (['pdf'].contains(ext)) iconColor = AppColors.danger;
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -394,7 +322,6 @@ class DashboardView extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,18 +345,16 @@ class DashboardView extends ConsumerWidget {
               ],
             ),
           ),
-<<<<<<< HEAD
-
-          const Icon(Icons.more_vert, size: 20),
-=======
           if (file.isStarred)
             const Padding(
               padding: EdgeInsets.only(right: 4),
-              child:
-                  Icon(Icons.star_rounded, color: AppColors.amber, size: 16),
+              child: Icon(
+                Icons.star_rounded,
+                color: AppColors.amber,
+                size: 16,
+              ),
             ),
           const Icon(Icons.more_vert, color: AppColors.textMuted, size: 20),
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
         ],
       ),
     );

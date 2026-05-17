@@ -1,24 +1,21 @@
+\import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+
 import '../../../../core/app_colors.dart';
 import '../../auth/models/user_model.dart';
 
 class StorageDonutChart extends StatelessWidget {
   final UserModel user;
-  
+
   const StorageDonutChart({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
-    // For MVP, we will only show Used vs Free since API might not split images/videos per user in `/auth/me`
-    // However, we represent Used with Primary and Free with BorderLight
-    
     final int used = user.storageUsed;
     final int quota = user.storageQuota > 0 ? user.storageQuota : 1;
     final int free = quota - used > 0 ? quota - used : 0;
-    
     final double usedPct = (used / quota) * 100;
-    
+
     return SizedBox(
       height: 180,
       width: 180,
@@ -45,13 +42,8 @@ class StorageDonutChart extends StatelessWidget {
                 ),
               ],
             ),
-
-            swapAnimationDuration: const Duration(milliseconds: 900),
-            swapAnimationCurve: Curves.easeInOutQuart,
-
             duration: const Duration(milliseconds: 900),
             curve: Curves.easeInOutQuart,
-
           ),
           Column(
             mainAxisSize: MainAxisSize.min,

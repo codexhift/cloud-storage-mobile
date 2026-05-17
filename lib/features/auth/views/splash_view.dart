@@ -39,20 +39,6 @@ class _SplashViewState extends State<SplashView>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Center(
-<<<<<<< HEAD
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-
-              'assets/CLD.png',
-
-              'assets/images/CLD.png',
-
-              height: 80,
-              errorBuilder: (context, error, stackTrace) => 
-                 const Icon(Icons.cloud, size: 80, color: AppColors.primary),
-=======
         child: FadeTransition(
           opacity: _fade,
           child: ScaleTransition(
@@ -76,7 +62,6 @@ class _SplashViewState extends State<SplashView>
                   ),
                 ),
               ],
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
             ),
           ),
         ),

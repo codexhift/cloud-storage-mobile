@@ -1,121 +1,29 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
 import '../../../core/api_client.dart';
 import '../models/user_model.dart';
-import 'dart:developer';
 
 class AuthRepository {
   final ApiClient _api = ApiClient();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-<<<<<<< HEAD
-
-  Future<UserModel?> login(String email, String password) async {
-  try {
-    final response = await _api.dio.post('v1/auth/login', data: {
-      'email': email,
-      'password': password,
-      'device_name': 'mobile_app',
-    });
-
-    print("LOGIN RESPONSE: ${response.data}");
-
-    if (response.statusCode == 200) {
-      final data = response.data;
-
-      // simpan token
-      final token =
-        data['token'] ??
-        data['access_token'] ??
-        data['data']?['token'] ??
-        data['data']?['access_token'];
-
-      print("TOKEN FROM API: $token");
-      if (token != null) {
-        await _storage.write(key: 'auth_token', value: token);
-      }
-
-      log("FULL RESPONSE: ", response.data);
-
-      // ambil user (support banyak kemungkinan struktur)
-      final userJson =
-          data['user'] ??
-          data['data']?['user'] ??
-          data;
-
-      return UserModel.fromJson(userJson);
-    }
-
-    return null;
-  } on DioException catch (e) {
-    print('Login failed: ${e.response?.data}');
-    throw Exception(e.response?.data['message'] ?? 'Failed to login');
-  }
-}
-
-  Future<UserModel?> getMe() async {
-  try {
-    final token = await _storage.read(key: 'auth_token');
-    print("TOKEN: $token");
-
-    if (token == null) return null;
-
-    final response = await _api.dio.get('/auth/me');
-
-    print("GET ME RESPONSE: ${response.data}");
-
-    if (response.statusCode == 200) {
-      final data = response.data;
-
-      final userJson =
-          data['user'] ??
-          data['data']?['user'] ??
-          data;
-
-      return UserModel.fromJson(userJson);
-    }
-
-    return null;
-  } catch (e) {
-    log('Error getting user: $e');
-    return null;
-  }
-}
-  Future<void> logout() async {
-    try {
-      await _api.dio.post('v1/auth/logout');
-    } catch (e) {
-      log('Logout API call failed, still clearing local token.');
-    } finally {
-      await _storage.delete(key: 'auth_token');
-    }
-  }
-}
-
-  // Custom exception for auth errors
-  const String tokenKey = 'auth_token';
-  const String rememberMeKey = 'remember_me';
-=======
   // Use the Web Client ID as serverClientId so google_sign_in can generate
   // tokens that the backend (Laravel Socialite) can verify.
   late final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
-    clientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'], // Required for Flutter Web
+    clientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'],
     serverClientId: dotenv.env['GOOGLE_WEB_CLIENT_ID'],
   );
 
   static const String tokenKey = 'auth_token';
->>>>>>> 52c3d151bb7a0fe9f32dd73e4000011df725cfef
 
   /// Sign in with Google natively, then exchange the token with the backend
   /// for a Sanctum bearer token.
-  ///
-  /// IMPORTANT: Laravel Socialite's `userFromToken()` expects a Google
-  /// **access_token** (it calls the userinfo endpoint with Bearer auth).
-  /// The API parameter is named `id_token` but we send the access_token
-  /// because that is what the backend actually processes.
   Future<UserModel> signInWithGoogle() async {
     log('AuthRepository: Starting Google Sign-In flow...');
 
@@ -134,8 +42,6 @@ class AuthRepository {
     final GoogleSignInAuthentication googleAuth =
         await googleAccount.authentication;
 
-    // The backend's Socialite::userFromToken() needs the ACCESS token,
-    // not the id_token, because it calls Google's userinfo endpoint.
     final String? accessToken = googleAuth.accessToken;
 
     if (accessToken == null || accessToken.isEmpty) {
@@ -146,9 +52,7 @@ class AuthRepository {
 
     log('AuthRepository: Google access_token obtained, exchanging with backend...');
 
-    // 3. Send the access_token to the backend via the `id_token` field
-    //    (the backend parameter name is id_token, but it processes it
-    //    as an access_token through Socialite::userFromToken)
+    // 3. Send the access_token to the backend
     try {
       final response = await _api.dio.post(
         '/v1/auth/google',
@@ -210,7 +114,6 @@ class AuthRepository {
         throw AuthException(message?.toString() ?? 'Autentikasi gagal.');
       }
 
-      // Network errors
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         throw AuthException(
@@ -272,14 +175,12 @@ class AuthRepository {
       log('AuthRepository: Logout API call failed (non-critical): $e');
     }
 
-    // Sign out of Google as well
     try {
       await _googleSignIn.signOut();
     } catch (e) {
       log('AuthRepository: Google sign out failed (non-critical): $e');
     }
 
-    // Always clear local token
     await _storage.delete(key: tokenKey);
     log('AuthRepository: Local token cleared');
   }
@@ -312,4 +213,3 @@ class AuthException implements Exception {
   @override
   String toString() => message;
 }
-
