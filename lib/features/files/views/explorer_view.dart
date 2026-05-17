@@ -1,25 +1,14 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-<<<<<<< HEAD
+import 'package:file_picker/file_picker.dart' as fp;
 
-=======
-import 'package:file_picker/file_picker.dart';
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
 import '../../../core/app_colors.dart';
 import '../../dashboard/widgets/cld_search_bar.dart';
 import '../models/file_model.dart';
 import '../models/folder_model.dart';
 import '../providers/file_provider.dart';
 import '../providers/search_provider.dart';
-<<<<<<< HEAD
 import '../widgets/file_card.dart';
-import 'package:file_picker/file_picker.dart' as fp;
-=======
-import '../models/folder_model.dart';
-import '../models/file_model.dart';
-import '../widgets/file_card.dart';
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
 
 class ExplorerView extends ConsumerStatefulWidget {
   final int folderId;
@@ -88,13 +77,12 @@ class _ExplorerViewState extends ConsumerState<ExplorerView> {
   }
 
   Future<void> _uploadFile() async {
-    // Ganti import di atas file:
+    final result = await fp.FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      withData: true,
+    );
+    if (result == null) return;
 
-// Lalu di _uploadFile:
-final result = await fp.FilePicker.platform.pickFiles(
-  allowMultiple: false,
-  withData: true,
-);
     final file = result.files.first;
     if (file.bytes == null) {
       if (mounted) {
@@ -222,13 +210,7 @@ final result = await fp.FilePicker.platform.pickFiles(
                 } catch (_) {}
               }),
               _buildOption(
-<<<<<<< HEAD
-                ctx,
-                Icons.delete_outline_rounded,
-                'Hapus',
-=======
                 ctx, Icons.delete_outline_rounded, 'Hapus',
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                 () async {},
                 color: AppColors.danger,
               ),
@@ -241,7 +223,6 @@ final result = await fp.FilePicker.platform.pickFiles(
   }
 
   Widget _buildOption(
-<<<<<<< HEAD
     BuildContext context,
     IconData icon,
     String label,
@@ -257,16 +238,6 @@ final result = await fp.FilePicker.platform.pickFiles(
           fontWeight: FontWeight.w500,
         ),
       ),
-=======
-      BuildContext context, IconData icon, String label, VoidCallback onTap,
-      {Color? color}) {
-    return ListTile(
-      leading: Icon(icon, color: color ?? AppColors.textSecondary),
-      title: Text(label,
-          style: TextStyle(
-              color: color ?? AppColors.textPrimary,
-              fontWeight: FontWeight.w500)),
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
       onTap: () {
         Navigator.pop(context);
         onTap();
@@ -324,9 +295,7 @@ final result = await fp.FilePicker.platform.pickFiles(
                     ],
                   ),
                 );
-                if (newName != null &&
-                    newName.isNotEmpty &&
-                    newName != f.name) {
+                if (newName != null && newName.isNotEmpty && newName != f.name) {
                   try {
                     final repo = ref.read(fileRepositoryProvider);
                     await repo.renameFolder(f.id, newName);
@@ -466,17 +435,11 @@ final result = await fp.FilePicker.platform.pickFiles(
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-<<<<<<< HEAD
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 childAspectRatio: 2.5,
-=======
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 2.5,
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
               ),
               itemCount: filtered.length,
               itemBuilder: (context, index) => _buildFolderCard(context, filtered[index]),
@@ -607,26 +570,15 @@ final result = await fp.FilePicker.platform.pickFiles(
           const SizedBox(height: 16),
           Text(
             isSearch ? 'Tidak ada hasil' : 'Folder kosong',
-<<<<<<< HEAD
-            style:
-                const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isSearch
-                ? 'Coba kata kunci lain.'
-                : 'Upload file atau buat folder baru.',
-=======
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 8),
           Text(
             isSearch ? 'Coba kata kunci lain.' : 'Upload file atau buat folder baru.',
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
             style: const TextStyle(color: AppColors.textSecondary),
           ),
         ],
       ),
     );
   }
-} 
+}

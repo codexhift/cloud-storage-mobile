@@ -47,12 +47,7 @@ class ProfileView extends ConsumerWidget {
             children: [
               const Text(
                 'Informasi akun dan penyimpanan Anda.',
-<<<<<<< HEAD
-                style:
-                    TextStyle(color: AppColors.textSecondary, fontSize: 14),
-=======
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
               ),
               const SizedBox(height: 24),
 
@@ -161,8 +156,7 @@ class ProfileView extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Column(
@@ -251,12 +245,7 @@ class ProfileView extends ConsumerWidget {
                   children: [
                     const Text(
                       'Aksi Pengguna',
-<<<<<<< HEAD
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 14),
-=======
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                     ),
                     const SizedBox(height: 12),
                     Material(
@@ -299,8 +288,7 @@ class ProfileView extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: AppColors.dangerLight,
                             borderRadius: BorderRadius.circular(12),
-                            border:
-                                Border.all(color: AppColors.dangerBorder),
+                            border: Border.all(color: AppColors.dangerBorder),
                           ),
                           child: const Row(
                             children: [

@@ -47,11 +47,7 @@ class _LoginViewState extends ConsumerState<LoginView>
     if (!success && mounted) {
       final authState = ref.read(authStateProvider);
       if (authState.error != null) {
-<<<<<<< HEAD
-        _showError(authState.error!);
-=======
         _showErrorSnackBar(authState.error!);
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
       }
     }
   }
@@ -75,13 +71,9 @@ class _LoginViewState extends ConsumerState<LoginView>
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
 
-<<<<<<< HEAD
-    // Listen for error changes
-=======
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (next.error != null && next.error != previous?.error) {
-        _showError(next.error!);
+        _showErrorSnackBar(next.error!);
         Future.delayed(const Duration(milliseconds: 100), () {
           ref.read(authStateProvider.notifier).clearError();
         });
@@ -93,14 +85,7 @@ class _LoginViewState extends ConsumerState<LoginView>
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-<<<<<<< HEAD
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 40.0,
-            ),
-=======
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
             child: FadeTransition(
               opacity: _fadeIn,
               child: SlideTransition(
@@ -142,38 +127,17 @@ class _LoginViewState extends ConsumerState<LoginView>
                             const SizedBox(height: 40),
                             Row(
                               children: [
-<<<<<<< HEAD
-                                const Expanded(
-                                  child: Divider(color: AppColors.border),
-                                ),
-=======
                                 const Expanded(child: Divider(color: AppColors.border)),
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                                 Container(
                                   margin: const EdgeInsets.symmetric(horizontal: 16),
                                   padding: const EdgeInsets.all(8),
                                   decoration: const BoxDecoration(
-<<<<<<< HEAD
                                     color: AppColors.primaryLight,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(
-                                    Icons.cloud_outlined,
-                                    color: AppColors.primary,
-                                    size: 20,
-=======
-                                    color: AppColors.primaryLight, shape: BoxShape.circle,
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
-                                  ),
                                   child: const Icon(Icons.cloud_outlined, color: AppColors.primary, size: 20),
                                 ),
-<<<<<<< HEAD
-                                const Expanded(
-                                  child: Divider(color: AppColors.border),
-                                ),
-=======
                                 const Expanded(child: Divider(color: AppColors.border)),
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                               ],
                             ),
                             const SizedBox(height: 32),
@@ -212,10 +176,6 @@ class _LoginViewState extends ConsumerState<LoginView>
                         ),
                       ),
                     ),
-<<<<<<< HEAD
-
-=======
->>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                     const SizedBox(height: 32),
                     const Text(
                       'Dengan masuk, Anda menyetujui\nSyarat & Ketentuan dan Kebijakan Privasi.',
