@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../core/app_colors.dart';
 import '../providers/auth_provider.dart';
 
 class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
-
   @override
   ConsumerState<LoginView> createState() => _LoginViewState();
 }
@@ -45,18 +43,20 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   Future<void> _signInWithGoogle() async {
-    final success =
-        await ref.read(authStateProvider.notifier).signInWithGoogle();
-
+    final success = await ref.read(authStateProvider.notifier).signInWithGoogle();
     if (!success && mounted) {
       final authState = ref.read(authStateProvider);
       if (authState.error != null) {
+<<<<<<< HEAD
         _showError(authState.error!);
+=======
+        _showErrorSnackBar(authState.error!);
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
       }
     }
   }
 
-  void _showError(String message) {
+  void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: AppColors.danger,
@@ -75,7 +75,10 @@ class _LoginViewState extends ConsumerState<LoginView>
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
 
+<<<<<<< HEAD
     // Listen for error changes
+=======
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (next.error != null && next.error != previous?.error) {
         _showError(next.error!);
@@ -90,10 +93,14 @@ class _LoginViewState extends ConsumerState<LoginView>
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+<<<<<<< HEAD
             padding: const EdgeInsets.symmetric(
               horizontal: 24.0,
               vertical: 40.0,
             ),
+=======
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
             child: FadeTransition(
               opacity: _fadeIn,
               child: SlideTransition(
@@ -102,22 +109,16 @@ class _LoginViewState extends ConsumerState<LoginView>
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Logo
                     Center(
                       child: Image.asset(
                         'assets/images/CLD.png',
                         height: 80,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                          Icons.cloud_queue,
-                          size: 80,
-                          color: AppColors.primary,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.cloud_queue, size: 80, color: AppColors.primary,
                         ),
                       ),
                     ),
                     const SizedBox(height: 48),
-
-                    // Welcome Card
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(32.0),
@@ -127,36 +128,32 @@ class _LoginViewState extends ConsumerState<LoginView>
                             const Text(
                               'Selamat Datang',
                               style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                                letterSpacing: -0.5,
+                                fontSize: 24, fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary, letterSpacing: -0.5,
                               ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
                             const Text(
                               'Masuk dengan akun Google untuk\nmengakses penyimpanan cloud Anda.',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                                height: 1.5,
-                              ),
+                              style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 40),
-
-                            // Decorative divider with cloud icon
                             Row(
                               children: [
+<<<<<<< HEAD
                                 const Expanded(
                                   child: Divider(color: AppColors.border),
                                 ),
+=======
+                                const Expanded(child: Divider(color: AppColors.border)),
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                                 Container(
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 16),
+                                  margin: const EdgeInsets.symmetric(horizontal: 16),
                                   padding: const EdgeInsets.all(8),
                                   decoration: const BoxDecoration(
+<<<<<<< HEAD
                                     color: AppColors.primaryLight,
                                     shape: BoxShape.circle,
                                   ),
@@ -164,74 +161,49 @@ class _LoginViewState extends ConsumerState<LoginView>
                                     Icons.cloud_outlined,
                                     color: AppColors.primary,
                                     size: 20,
+=======
+                                    color: AppColors.primaryLight, shape: BoxShape.circle,
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                                   ),
+                                  child: const Icon(Icons.cloud_outlined, color: AppColors.primary, size: 20),
                                 ),
+<<<<<<< HEAD
                                 const Expanded(
                                   child: Divider(color: AppColors.border),
                                 ),
+=======
+                                const Expanded(child: Divider(color: AppColors.border)),
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                               ],
                             ),
-
                             const SizedBox(height: 32),
-
-                            // Google Sign-In Button
                             SizedBox(
                               height: 52,
                               child: OutlinedButton(
-                                onPressed: authState.isLoading
-                                    ? null
-                                    : _signInWithGoogle,
+                                onPressed: authState.isLoading ? null : _signInWithGoogle,
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: Colors.white,
-                                  side: const BorderSide(
-                                    color: AppColors.border,
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                  side: const BorderSide(color: AppColors.border, width: 1.5),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   elevation: 0,
                                 ),
                                 child: authState.isLoading
                                     ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: AppColors.textSecondary,
-                                        ),
+                                        height: 20, width: 20,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary),
                                       )
                                     : Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Container(
-                                            width: 24,
-                                            height: 24,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
+                                            width: 24, height: 24,
+                                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
                                             child: const Center(
-                                              child: Text(
-                                                'G',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF4285F4),
-                                                ),
-                                              ),
+                                              child: Text('G', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF4285F4))),
                                             ),
                                           ),
                                           const SizedBox(width: 12),
-                                          const Text(
-                                            'Masuk dengan Google',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                          ),
+                                          const Text('Masuk dengan Google', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                                         ],
                                       ),
                               ),
@@ -240,17 +212,14 @@ class _LoginViewState extends ConsumerState<LoginView>
                         ),
                       ),
                     ),
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                     const SizedBox(height: 32),
-
-                    // Footer info
                     const Text(
                       'Dengan masuk, Anda menyetujui\nSyarat & Ketentuan dan Kebijakan Privasi.',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 12,
-                        height: 1.5,
-                      ),
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.5),
                       textAlign: TextAlign.center,
                     ),
                   ],

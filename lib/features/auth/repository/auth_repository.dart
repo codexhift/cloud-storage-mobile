@@ -212,4 +212,8 @@ class AuthException implements Exception {
 
   @override
   String toString() => message;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab

@@ -24,6 +24,7 @@ class ApiClient {
     // Note: Base URL is /api (without /v1)
     // - Auth endpoints use /v1/auth/... (handled in repository)
     // - File/Folder endpoints use /files/..., /folders/... (without v1)
+
     String baseUrl;
     if (kIsWeb) {
       baseUrl = dotenv.env['API_KEY_WEB'] ?? 'http://localhost:8000/api';

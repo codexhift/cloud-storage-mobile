@@ -47,8 +47,12 @@ class ProfileView extends ConsumerWidget {
             children: [
               const Text(
                 'Informasi akun dan penyimpanan Anda.',
+<<<<<<< HEAD
                 style:
                     TextStyle(color: AppColors.textSecondary, fontSize: 14),
+=======
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
               ),
               const SizedBox(height: 24),
 
@@ -247,8 +251,12 @@ class ProfileView extends ConsumerWidget {
                   children: [
                     const Text(
                       'Aksi Pengguna',
+<<<<<<< HEAD
                       style: TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 14),
+=======
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+>>>>>>> 1b39226a3c5d0e96d2481f81fc7edbb1bb75e1ab
                     ),
                     const SizedBox(height: 12),
                     Material(
@@ -271,9 +279,7 @@ class ProfileView extends ConsumerWidget {
                                 ElevatedButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
-                                    ref
-                                        .read(authStateProvider.notifier)
-                                        .logout();
+                                    ref.read(authStateProvider.notifier).logout();
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.danger,
@@ -298,8 +304,7 @@ class ProfileView extends ConsumerWidget {
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.logout,
-                                  color: AppColors.danger, size: 20),
+                              Icon(Icons.logout, color: AppColors.danger, size: 20),
                               SizedBox(width: 12),
                               Text(
                                 'Keluar dari Akun',
@@ -369,10 +374,8 @@ class ProfileView extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           ...info.categories.entries.map((entry) {
-            final color =
-                categoryColors[entry.key] ?? AppColors.textSecondary;
-            final icon =
-                categoryIcons[entry.key] ?? Icons.folder_outlined;
+            final color = categoryColors[entry.key] ?? AppColors.textSecondary;
+            final icon = categoryIcons[entry.key] ?? Icons.folder_outlined;
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
